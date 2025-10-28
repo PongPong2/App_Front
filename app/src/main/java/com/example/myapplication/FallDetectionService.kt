@@ -25,11 +25,16 @@ import android.telephony.SmsManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.example.myapplication.data.HealthConnectManager // [추가]
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope // [추가]
+import kotlinx.coroutines.Dispatchers // [추가]
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob // [추가]
+import kotlinx.coroutines.cancel // [추가]
+import kotlinx.coroutines.delay // [추가]
+import kotlinx.coroutines.launch // [추가]
 import kotlin.math.sqrt
 
 class FallDetectionService : Service(), SensorEventListener {
@@ -40,6 +45,11 @@ class FallDetectionService : Service(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    // [추가] Health Connect 및 코루틴 설정
+    private lateinit var healthConnectManager: HealthConnectManager
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob) // 서비스 범위 코루틴
 
     // 보호자 전화번호 (사용자 입력값)
     private val GUARDIAN_PHONE_NUMBER = BuildConfig.PHONE_NUMBER
@@ -60,6 +70,12 @@ class FallDetectionService : Service(), SensorEventListener {
     private val STILLNESS_THRESHOLD = 11.0f
     private val STILLNESS_TIME_MS = 1500L
     private val FALL_CONFIRMATION_DELAY_MS = 10000L
+
+    // [추가] 심박수/SpO2 위험 임계치 (테스트용)
+    private val HR_CRITICAL_HIGH = 120.0
+    private val HR_CRITICAL_LOW = 40.0
+    private val SPO2_CRITICAL_LOW = 90.0
+    private val MONITORING_INTERVAL_MS = 60000L // 1분 주기 모니터링
 
     private val SENT_ACTION = "SMS_SENT_STATUS"
 
@@ -99,6 +115,9 @@ class FallDetectionService : Service(), SensorEventListener {
         super.onCreate()
         Log.d(TAG, "Service Created")
 
+        // [추가] HealthConnectManager 초기화
+        healthConnectManager = HealthConnectManager(applicationContext)
+
         handler = Handler(Looper.getMainLooper())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -119,6 +138,9 @@ class FallDetectionService : Service(), SensorEventListener {
         } else {
             Log.e(TAG, "Accelerometer not found on device.")
         }
+
+        // [추가] 1분 주기 심박수 모니터링 시작
+        startHeartRateMonitoring()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -140,6 +162,9 @@ class FallDetectionService : Service(), SensorEventListener {
         handler.removeCallbacks(fallAlertRunnable)
         sensorManager.unregisterListener(this)
 
+        // [수정] 코루틴 작업 취소 및 리소스 해제
+        serviceScope.cancel()
+
         // 서비스 종료 시 리시버 해제
         try {
             unregisterReceiver(smsSentReceiver)
@@ -149,6 +174,41 @@ class FallDetectionService : Service(), SensorEventListener {
 
         Log.d(TAG, "Service Destroyed")
     }
+
+    // =================================================================
+    //  Heart Rate / SpO2 Monitoring Logic
+    // =================================================================
+
+    /** 1분마다 심박수와 SpO2를 체크하여 위험 임계치를 벗어나는지 확인합니다. */
+    private fun startHeartRateMonitoring() {
+        serviceScope.launch {
+            while (true) {
+                // 심박수 및 SpO2 조회 (최근 1분 데이터)
+                val avgBpm = healthConnectManager.readLatestHeartRateAvg(1)
+                val avgSpO2 = healthConnectManager.getFakeOxygenSaturation() // 가짜 데이터 사용
+
+                Log.d(TAG, "HR Monitor: BPM=${"%.1f".format(avgBpm)}, SpO2=${"%.1f".format(avgSpO2)}")
+
+                // 1. 심박수 위험 임계치 체크
+                if (avgBpm > HR_CRITICAL_HIGH || (avgBpm > 0.0 && avgBpm < HR_CRITICAL_LOW)) {
+                    val message = if (avgBpm > HR_CRITICAL_HIGH) "🚨 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
+                    else "🚨 심박수 급격한 하락 감지: ${"%.1f".format(avgBpm)} BPM"
+                    Log.e(TAG, message)
+                    getLocationAndSendAlert(isImmediate = true, customMessage = message)
+                }
+
+                // 2. SpO2 위험 임계치 체크
+                if (avgSpO2 > 0.0 && avgSpO2 < SPO2_CRITICAL_LOW) {
+                    val message = "🚨 산소포화도 임계치 이하 감지: ${"%.1f".format(avgSpO2)}%"
+                    Log.e(TAG, message)
+                    getLocationAndSendAlert(isImmediate = true, customMessage = message)
+                }
+
+                delay(MONITORING_INTERVAL_MS) // 1분 대기
+            }
+        }
+    }
+
 
     //  Sensor Event Listener (동일)
 
@@ -234,12 +294,16 @@ class FallDetectionService : Service(), SensorEventListener {
     // =================================================================
 
     /** 최종적으로 위치를 획득하고 SMS/Kakao 알림을 전송하는 함수 */
-    private fun getLocationAndSendAlert() {
-        Log.e(TAG, "--- FINAL ALERT TRIGGERED ---")
+    private fun getLocationAndSendAlert(isImmediate: Boolean = false, customMessage: String? = null) {
+        val alertType = if (isImmediate) "IMMEDIATE ALERT (HR/SpO2)" else "FINAL FALL ALERT"
+        Log.e(TAG, "--- $alertType TRIGGERED ---")
+
+        // 최종 메시지를 결정합니다.
+        val baseMessage = customMessage ?: "🚨 긴급 낙상 감지! 🚨"
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "위치 권한이 없어 알림을 전송할 수 없습니다.")
-            sendSms(GUARDIAN_PHONE_NUMBER, "🚨 긴급 낙상 감지! 🚨 위치 권한 부족으로 위치 정보 획득 실패.")
+            sendSms(GUARDIAN_PHONE_NUMBER, "$baseMessage 위치 권한 부족으로 위치 정보 획득 실패.")
             return
         }
 
@@ -249,19 +313,18 @@ class FallDetectionService : Service(), SensorEventListener {
                 val longitude = location?.longitude ?: 0.0
 
                 if (location != null) {
-                    // 카카오맵 링크로 변경 필요 (현재는 구글맵 예시)
                     val mapLink = "http://maps.google.com/maps?q=$latitude,$longitude"
-                    val message = "긴급 구조 요청! 사용자에게 낙상이 감지되었습니다. 현재 위치: $mapLink"
-                    sendSms(GUARDIAN_PHONE_NUMBER, message)
+                    val fullMessage = "$baseMessage 현재 위치: $mapLink"
+                    sendSms(GUARDIAN_PHONE_NUMBER, fullMessage)
                     // sendKakaoAlert(latitude, longitude)
                 } else {
                     Log.w(TAG, "위치 정보를 가져올 수 없습니다. 일반 메시지만 전송합니다.")
-                    sendSms(GUARDIAN_PHONE_NUMBER, "긴급 구조 요청! 사용자에게 낙상이 감지되었습니다. 위치 정보 획득 실패.")
+                    sendSms(GUARDIAN_PHONE_NUMBER, "$baseMessage 위치 정보 획득 실패.")
                 }
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "위치 정보를 가져오는 데 실패했습니다: ${e.message}")
-                sendSms(GUARDIAN_PHONE_NUMBER, "긴급 구조 요청! 사용자에게 낙상이 감지되었습니다. 위치 정보 획득 중 오류 발생.")
+                sendSms(GUARDIAN_PHONE_NUMBER, "$baseMessage 위치 정보 획득 중 오류 발생.")
             }
     }
 

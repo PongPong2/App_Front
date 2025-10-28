@@ -133,7 +133,7 @@
             app:backgroundTint="#FFD899"
             android:textStyle="bold"
             app:strokeWidth="1dp"
-             />
+            />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_signup"
@@ -150,10 +150,6 @@
             app:strokeWidth="1dp"
             />
 
-<<<<<<< HEAD
-
-=======
->>>>>>> d39894a0e71ea0040b24929b15feb56351b3df64
         <Space
             android:layout_width="match_parent"
             android:layout_height="0dp"

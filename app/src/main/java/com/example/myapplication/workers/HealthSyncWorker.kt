@@ -7,8 +7,12 @@ import androidx.work.*
 import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.data.HealthDataStore
 import com.example.myapplication.data.HeartRateData
+import androidx.health.connect.client.records.SleepSessionRecord // SleepSessionRecord 상수 참조를 위해 추가
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.time.Duration
+import java.time.ZoneId
+import java.time.LocalTime
 
 
 class HealthSyncWorker(
@@ -26,7 +30,7 @@ class HealthSyncWorker(
         val startTime = endTime.minus(10, ChronoUnit.MINUTES)
 
         try {
-            // 걸음수 차감 로직 (기존 구현)
+            // 걸음수 (Steps) 처리
             val previousStepsTotal = dataStore.getPreviousStepsTotal() // Long 로드
             val currentStepsTotal = healthConnectManager.readCumulativeTotalSteps() // Long 읽기
 
@@ -34,50 +38,85 @@ class HealthSyncWorker(
             if (newSteps < 0) {
                 newSteps = currentStepsTotal // 자정 리셋 시 현재 총합을 10분 걸음수로 간주
             }
-            val heartRateSamples = healthConnectManager.readHeartRateSamples(startTime, endTime)
 
-            val heartRateDataList = heartRateSamples.map { sample ->
-                // BPM과 Time을 서버 전송 포맷에 맞게 변환
-                HeartRateData(
-                    bpm = sample.beatsPerMinute.toDouble(),
-                    time = sample.time.toString()
-                )
-            }
-            // 소모 칼로리 차감 로직 (새로운 구현)
+            // 심박수 (Heart Rate) 처리: 평균 BPM 계산
+            val heartRateSamples = healthConnectManager.readHeartRateSamples(startTime, endTime)
+            val heartRateAvgBpm: Double = heartRateSamples
+                .map { it.beatsPerMinute.toDouble() }
+                .average() // 10분간의 평균 BPM
+
+            // 소모 칼로리 (Calories) 처리: 안전 로직 적용
             val previousCaloriesTotal = dataStore.getPreviousCaloriesTotal() // Double 로드
             val currentCaloriesTotal = healthConnectManager.readCumulativeTotalCalories() // Double 읽기
 
-            // 10분간의 순수 칼로리 변화량 (총 소모 칼로리)
             var newCalories = currentCaloriesTotal - previousCaloriesTotal
 
-            // 자정 리셋 처리: 현재 총합이 이전 값보다 작으면 자정이 지난 것
-            if (newCalories < 0) {
-                newCalories = currentCaloriesTotal
+            // 개선된 자정 리셋 및 동기화 오류 처리
+            if (newCalories < 0.0) {
+                val now = Instant.now().atZone(ZoneId.systemDefault()).toLocalTime()
+                val isNearMidnight = now.isBefore(LocalTime.of(0, 30))
+
+                if (isNearMidnight) {
+                    newCalories = currentCaloriesTotal
+                    Log.i("WORKER", "칼로리: 정상 자정 리셋. 10분 변화량: $newCalories")
+                } else {
+                    newCalories = 0.0 // 비정상적인 값 감소는 0으로 처리
+                    Log.w("WORKER", "칼로리: 비정상적인 누적 값 감소 감지. 변화량을 0.0으로 설정.")
+                }
+            }
+            if (newCalories < 0.0) newCalories = 0.0 // 최종 안전 장치
+
+
+            // 수면 단계 데이터 조회 및 처리 (단계별 시간 계산)
+            val sleepSessions = healthConnectManager.readSleepSessions(startTime, endTime)
+
+            var totalSleepDurationMin = 0L
+            var sleepStageWakeMin = 0L
+            var sleepStageDeepMin = 0L
+            var sleepStageRemMin = 0L
+            var sleepStageLightMin = 0L
+
+            for (session in sleepSessions) {
+                totalSleepDurationMin += Duration.between(session.startTime, session.endTime).toMinutes()
+
+                for (stage in session.stages) {
+                    val duration = Duration.between(stage.startTime, stage.endTime).toMinutes()
+
+                    when (stage.stage) {
+                        // SleepStageRecord 상수를 SleepSessionRecord의 상수로 변경
+                        SleepSessionRecord.STAGE_TYPE_AWAKE -> sleepStageWakeMin += duration
+                        SleepSessionRecord.STAGE_TYPE_DEEP -> sleepStageDeepMin += duration
+                        SleepSessionRecord.STAGE_TYPE_REM -> sleepStageRemMin += duration
+                        SleepSessionRecord.STAGE_TYPE_LIGHT -> sleepStageLightMin += duration // 얕은 수면/핵심 수면으로 간주
+                        // 기타 단계는 무시
+                    }
+                }
             }
 
-            // 데이터가 음수로 나오는 것을 방지 (간혹 동기화 오류로 음수가 나올 수 있음)
-            if (newCalories < 0.0) newCalories = 0.0
 
-
-            // LSTM 데이터 레코드 생성 및 서버 전송
-
-            // 기타 시계열 데이터 읽기 (심박수, SpO2)
-            // val heartRate = healthConnectManager.readHeartRateData(start, end)
+            //  서버 전송 데이터 객체 생성
             val fakeSpO2 = healthConnectManager.getFakeOxygenSaturation() // 가짜 SpO2 사용
 
-            val healthData = HealthData( // 서버 전송용 데이터 객체
+            val healthData = HealthData( // 서버 전송용 데이터 객체 (HealthData 구조는 별도 정의 필요)
                 walkingSteps = newSteps.toInt(),
-                totalCaloriesBurned = newCalories, // 10분간의 칼로리 변화량 전송
+                totalCaloriesBurned = newCalories,
                 spo2 = fakeSpO2,
-                heartRate = heartRateDataList
+                heartRateAvg = heartRateAvgBpm,
+
+                // 수면 단계별 시간
+                sleepDurationMin = totalSleepDurationMin,
+                sleepStageWakeMin = sleepStageWakeMin,
+                sleepStageDeepMin = sleepStageDeepMin,
+                sleepStageRemMin = sleepStageRemMin,
+                sleepStageLightMin = sleepStageLightMin
             )
 
-            // RetrofitClient.apiService.sendHealthData(healthData)
-            Log.d("WORKER", "서버 전송 데이터 (10분 변화량) - 걸음: $newSteps 보, 칼로리: ${"%.2f".format(newCalories)} kcal")
+            // RetrofitClient.apiService.sendHealthData(healthData) // 이 코드를 활성화하여 서버로 전송
+            Log.d("WORKER", "서버 전송 데이터 (10분 변화량) - 걸음: $newSteps 보, 칼로리: ${"%.2f".format(newCalories)} kcal, 수면: ${totalSleepDurationMin}분")
 
             // 다음 실행을 위해 현재 누적 총합 저장
             dataStore.savePreviousStepsTotal(currentStepsTotal)
-            dataStore.savePreviousCaloriesTotal(currentCaloriesTotal) // 현재 칼로리 총합 저장
+            dataStore.savePreviousCaloriesTotal(currentCaloriesTotal)
 
             return Result.success()
 

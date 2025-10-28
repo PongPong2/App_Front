@@ -95,6 +95,32 @@ class HealthConnectManager(private val context: Context) {
         return response.records.flatMap { it.samples }
     }
 
+    /*
+    *  테스트용 가짜 심박수 데이터
+    * */
+    fun getFakeHeartRateSamples(start: Instant, end: Instant): List<HeartRateRecord.Sample> {
+        val durationSeconds = Duration.between(start, end).seconds
+        if (durationSeconds <= 0) return emptyList()
+
+        val samples = mutableListOf<HeartRateRecord.Sample>()
+        val numSamples = 10 // 10분 동안 10개 샘플 (1분당 1개 꼴)
+        val intervalSeconds = durationSeconds / numSamples
+
+        for (i in 0 until numSamples) {
+            val sampleTime = start.plusSeconds(i * intervalSeconds)
+            // 60~85 BPM 사이의 정상적인 심박수 생성
+            val bpm = Random.nextInt(60, 86).toLong()
+
+            samples.add(
+                HeartRateRecord.Sample(
+                    beatsPerMinute = bpm,
+                    time = sampleTime
+                )
+            )
+        }
+        return samples
+    }
+
     /**
      * 지정된 기간의 [OxygenSaturationRecord] 목록
      */
@@ -137,6 +163,11 @@ class HealthConnectManager(private val context: Context) {
     /**
      * 지정된 기간의 [SleepSessionRecord] 목록
      */
+
+
+    /**
+     * 지정된 기간의 [SleepSessionRecord] 목록
+     */
     suspend fun readSleepSessions(start: Instant, end: Instant): List<SleepSessionRecord> {
         val request = ReadRecordsRequest(
             recordType = SleepSessionRecord::class,
@@ -145,6 +176,22 @@ class HealthConnectManager(private val context: Context) {
         return healthConnectClient.readRecords(request).records
     }
 
+    /**
+     * [실시간 모니터링용] 지정된 기간 (예: 최근 1분)의 평균 심박수를 반환
+     */
+    suspend fun readLatestHeartRateAvg(durationMinutes: Long = 1): Double {
+        val endTime = Instant.now()
+        val startTime = endTime.minus(durationMinutes, ChronoUnit.MINUTES)
+
+        val samples = getFakeHeartRateSamples(startTime, endTime) // 가짜 샘플 사용
+
+        if (samples.isEmpty()) {
+            return 0.0 // 데이터가 없으면 0 반환
+        }
+
+        // 모든 샘플의 BPM 평균을 계산
+        return samples.map { it.beatsPerMinute.toDouble() }.average()
+    }
     // 데이터 기록하기 (WRITE 전용)
     // (체중, 혈당, 혈압)
 

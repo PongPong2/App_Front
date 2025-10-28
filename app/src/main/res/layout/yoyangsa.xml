@@ -77,11 +77,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-<<<<<<< HEAD
-                android:layout_marginTop="10dp"
-=======
                 android:layout_marginTop="70dp"
->>>>>>> d39894a0e71ea0040b24929b15feb56351b3df64
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="20dp"
                 android:background="@drawable/bohoja_border_background"
@@ -109,11 +105,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-<<<<<<< HEAD
-                    android:background="@drawable/bohoja_bottom_color"
-=======
                     android:background="@drawable/yoyangsa_bottom"
->>>>>>> d39894a0e71ea0040b24929b15feb56351b3df64
                     android:orientation="vertical"
                     android:padding="8dp">
 
@@ -333,13 +325,13 @@
                                     android:src="@drawable/centre" />
 
                                 <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
-                                android:text="소속 센터명"
-                                android:textColor="@android:color/black"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/pretendardvariable"
+                                    android:text="소속 센터명"
+                                    android:textColor="@android:color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
                             </LinearLayout>
 
                             <TextView
@@ -377,13 +369,13 @@
                                     android:src="@drawable/address" />
 
                                 <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
-                                android:text="센터 주소"
-                                android:textColor="@android:color/black"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/pretendardvariable"
+                                    android:text="센터 주소"
+                                    android:textColor="@android:color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
                             </LinearLayout>
 
                             <TextView
