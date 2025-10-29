@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.os.Bundle
+<<<<<<< HEAD
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -92,3 +93,24 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 }
+=======
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+
+class SignUpActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.signup)
+
+        val backButton: Button = findViewById(R.id.btn_back)
+        backButton.setOnClickListener {
+            finish()
+        }
+
+        val signUpButton: Button = findViewById(R.id.btn_signup)
+        signUpButton.setOnClickListener {
+            finish()
+        }
+    }
+}
+>>>>>>> 051e103096799e51629f301552ffd1c0542ca37d

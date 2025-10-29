@@ -133,7 +133,11 @@
             app:backgroundTint="#FFD899"
             android:textStyle="bold"
             app:strokeWidth="1dp"
+<<<<<<< HEAD
              />
+=======
+            />
+>>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_signup"

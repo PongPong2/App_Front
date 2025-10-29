@@ -325,6 +325,7 @@
                                     android:src="@drawable/centre" />
 
                                 <TextView
+<<<<<<< HEAD
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/pretendardvariable"
@@ -332,6 +333,15 @@
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
+=======
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/pretendardvariable"
+                                    android:text="소속 센터명"
+                                    android:textColor="@android:color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+>>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
                             </LinearLayout>
 
                             <TextView
@@ -369,6 +379,7 @@
                                     android:src="@drawable/address" />
 
                                 <TextView
+<<<<<<< HEAD
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/pretendardvariable"
@@ -376,6 +387,15 @@
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
+=======
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/pretendardvariable"
+                                    android:text="센터 주소"
+                                    android:textColor="@android:color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+>>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
                             </LinearLayout>
 
                             <TextView
