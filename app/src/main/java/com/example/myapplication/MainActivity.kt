@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -21,10 +22,19 @@ import androidx.activity.enableEdgeToEdge
 =======
 import androidx.activity.result.ActivityResultLauncher
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+<<<<<<< HEAD
 <<<<<<< HEAD
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -132,12 +142,24 @@ class MainActivity : ComponentActivity() {
         Manifest.permission.POST_NOTIFICATIONS // Android 13+ 알림용
     )
 
+=======
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.google.android.material.button.MaterialButton
+
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+
+class MainActivity : ComponentActivity() {
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
     override fun onCreate(savedInstanceState: Bundle?) {
 
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+<<<<<<< HEAD
 
         // Key Hash 확인 코드 (확인 후 반드시 주석 처리하거나 삭제하기)
 
@@ -248,19 +270,25 @@ class MainActivity : ComponentActivity() {
      * 앱의 기본 UI (로그인 화면)를 설정하는 함수
      */
     private fun setupContent() {
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
         setContent {
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     LoginScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
+<<<<<<< HEAD
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
                 }
             }
         }
     }
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 fun isAutoLoggedIn(context: Context): Boolean {
     val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -320,18 +348,24 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
 
 =======
 // 기존 LoginScreen Composable 함수는 그대로 유지
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier) {
     AndroidView(
         modifier = modifier.fillMaxSize(),
         factory = { context ->
             val view = LayoutInflater.from(context).inflate(R.layout.login, null, false)
+<<<<<<< HEAD
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
             val signUpButton = view.findViewById<MaterialButton>(R.id.btn_signup)
             signUpButton?.setOnClickListener {
                 val intent = Intent(context, SignUpActivity::class.java)
                 context.startActivity(intent)
             }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
             val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
@@ -350,11 +384,16 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                     viewModel.login(loginId, password)
                 }
 =======
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
             val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
             loginButton?.setOnClickListener {
                 val intent = Intent(context, MainPageActivity::class.java)
                 context.startActivity(intent)
+<<<<<<< HEAD
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
             }
             view
         },

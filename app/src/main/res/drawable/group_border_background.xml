@@ -4,10 +4,17 @@
     <corners android:radius="20dp" />
 
     <stroke
+<<<<<<< HEAD
         android:width="2dp"
         android:color="#FFE4BB" />
 <<<<<<< HEAD
 
 =======
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+        android:width="3dp"
+        android:color="#FFD899"
+        />
+
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
 </shape>

@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.os.Bundle
 <<<<<<< HEAD
+<<<<<<< HEAD
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -94,6 +95,8 @@ class SignUpActivity : AppCompatActivity() {
     }
 }
 =======
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 
@@ -113,4 +116,7 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 }
+<<<<<<< HEAD
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50

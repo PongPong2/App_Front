@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 // import java.util.Properties  <-- 필요 없음
@@ -10,6 +11,8 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 // if (localPropertiesFile.exists()) { ... } <-- 삭제
 
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -23,15 +26,20 @@ android {
     defaultConfig {
         applicationId = "com.example.myapplication"
 <<<<<<< HEAD
+<<<<<<< HEAD
         minSdk = 21
 =======
         minSdk = 26
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+        minSdk = 21
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 
@@ -46,6 +54,8 @@ android {
         manifestPlaceholders["K_API_KEY"] = gradleLocalProperties(rootDir, providers)
             .getProperty("KAKAO_API_KEY") ?: "DEFAULT_KAKAO_KEY"
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
     }
 
     buildTypes {
@@ -67,6 +77,7 @@ android {
     buildFeatures {
         compose = true
 <<<<<<< HEAD
+<<<<<<< HEAD
         viewBinding = true
     }
 
@@ -83,10 +94,16 @@ android {
 =======
         buildConfig = true
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
     }
 }
 
 dependencies {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -96,6 +113,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.appcompat)
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -113,6 +131,8 @@ dependencies {
 
 =======
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -120,6 +140,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+<<<<<<< HEAD
 <<<<<<< HEAD
 }
 =======
@@ -146,3 +167,10 @@ dependencies {
     implementation("com.kakao.sdk:v2-user:$kakaoSdkVersion")
 }
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.google.android.material:material:1.12.0")
+
+}
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50

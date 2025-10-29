@@ -17,9 +17,12 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         maven { url = java.net.URI("https://devrepo.kakao.com/nexus/content/groups/public/") }
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
     }
 }
 

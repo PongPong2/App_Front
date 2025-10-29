@@ -134,10 +134,14 @@
             android:textStyle="bold"
             app:strokeWidth="1dp"
 <<<<<<< HEAD
+<<<<<<< HEAD
              />
 =======
             />
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+             />
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_signup"

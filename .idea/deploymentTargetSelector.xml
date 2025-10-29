@@ -5,6 +5,7 @@
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
 <<<<<<< HEAD
+<<<<<<< HEAD
         <DropdownSelection timestamp="2025-10-29T02:24:52.232508Z">
           <Target type="DEFAULT_BOOT">
             <handle>
@@ -28,16 +29,24 @@
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=R3CW9061GAH" />
 =======
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
         <DropdownSelection timestamp="2025-10-21T09:41:06.515715Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/yunjongsu/.android/avd/Medium_Phone_2.avd" />
+<<<<<<< HEAD
 >>>>>>> d39894a0e71ea0040b24929b15feb56351b3df64
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
+<<<<<<< HEAD
 >>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+=======
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
       </SelectionState>
     </selectionStates>
   </component>

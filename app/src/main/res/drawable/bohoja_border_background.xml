@@ -5,7 +5,11 @@
 
     <stroke
         android:width="2dp"
+<<<<<<< HEAD
         android:color="#FFE4BB"
+=======
+        android:color="#d9d9d9"
+>>>>>>> 1c8f4a748c5d7dc25ee28cd1f656b8de3b80ea50
         />
 
 </shape>
