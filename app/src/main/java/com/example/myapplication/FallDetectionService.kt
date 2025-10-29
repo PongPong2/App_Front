@@ -175,9 +175,7 @@ class FallDetectionService : Service(), SensorEventListener {
         Log.d(TAG, "Service Destroyed")
     }
 
-    // =================================================================
     //  Heart Rate / SpO2 Monitoring Logic
-    // =================================================================
 
     /** 1분마다 심박수와 SpO2를 체크하여 위험 임계치를 벗어나는지 확인합니다. */
     private fun startHeartRateMonitoring() {
@@ -187,19 +185,19 @@ class FallDetectionService : Service(), SensorEventListener {
                 val avgBpm = healthConnectManager.readLatestHeartRateAvg(1)
                 val avgSpO2 = healthConnectManager.getFakeOxygenSaturation() // 가짜 데이터 사용
 
-                Log.d(TAG, "HR Monitor: BPM=${"%.1f".format(avgBpm)}, SpO2=${"%.1f".format(avgSpO2)}")
+                Log.d(TAG, "HR Monitor: BPM=$avgBpm, SpO2=$avgSpO2")
 
                 // 1. 심박수 위험 임계치 체크
                 if (avgBpm > HR_CRITICAL_HIGH || (avgBpm > 0.0 && avgBpm < HR_CRITICAL_LOW)) {
                     val message = if (avgBpm > HR_CRITICAL_HIGH) "🚨 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
-                    else "🚨 심박수 급격한 하락 감지: ${"%.1f".format(avgBpm)} BPM"
+                    else "심박수 급격한 하락 감지: ${"%.1f".format(avgBpm)} BPM"
                     Log.e(TAG, message)
                     getLocationAndSendAlert(isImmediate = true, customMessage = message)
                 }
 
                 // 2. SpO2 위험 임계치 체크
                 if (avgSpO2 > 0.0 && avgSpO2 < SPO2_CRITICAL_LOW) {
-                    val message = "🚨 산소포화도 임계치 이하 감지: ${"%.1f".format(avgSpO2)}%"
+                    val message = "산소포화도 임계치 이하 감지: ${"%.1f".format(avgSpO2)}%"
                     Log.e(TAG, message)
                     getLocationAndSendAlert(isImmediate = true, customMessage = message)
                 }

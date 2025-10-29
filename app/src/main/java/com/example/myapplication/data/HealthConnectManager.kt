@@ -23,6 +23,7 @@ import java.time.temporal.ChronoUnit
 import java.time.Duration
 import java.time.ZoneId
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 // Health Connect를 사용할 수 있는 최소 Android 레벨
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
@@ -153,10 +154,10 @@ class HealthConnectManager(private val context: Context) {
     }
 
     /**
-     * [테스트용] 95.0% ~ 100.0% 사이의 임의의 산소 포화도 값을 반환 => 산소포화도 10분마다 못받아오니까 수정 필요
+     * [테스트용] 95% ~ 100% 사이의 임의의 산소 포화도 값을 반환 => 산소포화도 10분마다 못받아오니까 수정 필요
      */
-    fun getFakeOxygenSaturation(): Double {
-        val randomValue = (Random.nextDouble(95.0, 100.0) * 100).toLong() / 100.0
+    fun getFakeOxygenSaturation(): Int {
+        val randomValue = (Random.nextInt(95, 100))
         return randomValue
     }
 

@@ -1,43 +1,50 @@
 package com.example.myapplication
 
-<<<<<<< HEAD
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.CheckBox
-=======
-import android.Manifest
-import android.content.Intent
-import android.net.Uri
-import android.os.Bundle
-import android.view.LayoutInflater
->>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-<<<<<<< HEAD
-=======
 import androidx.activity.result.ActivityResultLauncher
->>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-<<<<<<< HEAD
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.myapplication.data.HealthConnectAvailability
+import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.workers.HealthSyncWorker
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
+// SharedPreferences 상수
 const val PREFS_NAME = "LOGIN_PREFS"
 const val KEY_NAME = "user_name"
 const val KEY_GENDER = "user_gender"
@@ -45,13 +52,39 @@ const val KEY_AUTO_LOGIN = "auto_login"
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var healthConnectManager: HealthConnectManager
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<Set<String>>
+    private lateinit var requestFallPermissionsLauncher: ActivityResultLauncher<Array<String>>
+
     companion object {
         var isAutoLoginCheckedState: Boolean = false
     }
 
+    // Health Connect 권한 목록
+    private val HC_PERMISSIONS = setOf(
+        HealthPermission.getReadPermission(StepsRecord::class),
+        HealthPermission.getReadPermission(HeartRateRecord::class),
+        HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.getReadPermission(SleepSessionRecord::class),
+        HealthPermission.getWritePermission(WeightRecord::class),
+        HealthPermission.getWritePermission(BloodGlucoseRecord::class),
+        HealthPermission.getWritePermission(BloodPressureRecord::class),
+        HealthPermission.getWritePermission(BodyTemperatureRecord::class),
+        "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
+    )
+
+    // 낙상 감지 서비스 필수 위험 권한 목록
+    private val FALL_DETECTION_PERMISSIONS = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.SEND_SMS,
+        Manifest.permission.POST_NOTIFICATIONS
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
+        // 자동 로그인 체크 (로그인 로직)
         if (isAutoLoggedIn(this)) {
             val intent = Intent(this, MainPageActivity::class.java)
             startActivity(intent)
@@ -61,86 +94,6 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            MyApplicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val viewModel: LoginViewModel = viewModel()
-                    LoginScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        viewModel = viewModel
-                    )
-
-                    LoginObserver(viewModel = viewModel)
-=======
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.*
-import com.example.myapplication.data.HealthConnectManager
-import com.example.myapplication.data.HealthConnectAvailability
-import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.google.android.material.button.MaterialButton
-
-// WorkManager 및 시간 관련 임포트
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.WorkManager
-import com.example.myapplication.workers.HealthSyncWorker
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import android.util.Log
-import com.kakao.sdk.common.util.Utility
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-
-class MainActivity : ComponentActivity() {
-
-    private lateinit var healthConnectManager: HealthConnectManager
-    // Health Connect 권한 요청 런처
-    private lateinit var requestPermissionLauncher: ActivityResultLauncher<Set<String>>
-    // 낙상 감지 서비스 권한 요청 런처
-    private lateinit var requestFallPermissionsLauncher: ActivityResultLauncher<Array<String>>
-
-    // Health Connect 권한 목록 (앱에 맞춰 조절하세요)
-    private val HC_PERMISSIONS = setOf(
-        // READ 전용 권한 (삼성 헬스 등에서 가져올 데이터)
-        HealthPermission.getReadPermission(StepsRecord::class),             // 걸음수
-        HealthPermission.getReadPermission(HeartRateRecord::class),         // 심박수
-        HealthPermission.getReadPermission(OxygenSaturationRecord::class),  // 산소 포화도
-        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),// 소모 칼로리
-        HealthPermission.getReadPermission(SleepSessionRecord::class),      // 수면
-
-        // WRITE 전용 권한 (우리 앱에서 기록할 데이터)
-        HealthPermission.getWritePermission(WeightRecord::class),           // 체중
-        HealthPermission.getWritePermission(BloodGlucoseRecord::class),     // 혈당
-        HealthPermission.getWritePermission(BloodPressureRecord::class),    // 혈압
-        HealthPermission.getWritePermission(BodyTemperatureRecord::class), // 체온
-        "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" // 백그라운드 권한 부여하려면 필요한거
-    )
-
-    // 낙상 감지 서비스 필수 위험 권한 목록
-    private val FALL_DETECTION_PERMISSIONS = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.SEND_SMS,
-        Manifest.permission.POST_NOTIFICATIONS // Android 13+ 알림용
-    )
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        installSplashScreen()
-
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
-        // Key Hash 확인 코드 (확인 후 반드시 주석 처리하거나 삭제하기)
-
 
         healthConnectManager = HealthConnectManager(this)
 
@@ -153,8 +106,7 @@ class MainActivity : ComponentActivity() {
             } else {
                 Toast.makeText(this, "Health Connect 권한 부족", Toast.LENGTH_LONG).show()
             }
-            // Health Connect 권한 처리 후, 낙상 감지 권한 요청으로 연결
-            requestFallDetectionPermissions()
+            requestFallDetectionPermissions() // HC 권한 처리 후, 낙상 감지 권한 요청으로 연결
         }
 
         // 낙상 감지 서비스 권한 요청 런처 정의
@@ -165,6 +117,7 @@ class MainActivity : ComponentActivity() {
             if (granted) {
                 Toast.makeText(this, "위치/SMS 권한 획득 완료", Toast.LENGTH_SHORT).show()
                 startFallDetectionService() // 권한 성공 시 서비스 시작
+                setupContent() // 서비스 시작 후 UI 설정 (Login)
             } else {
                 Toast.makeText(this, "구조 요청 기능이 제한됩니다.", Toast.LENGTH_LONG).show()
                 setupContent() // 서비스 시작 실패 시에도 UI는 표시
@@ -176,7 +129,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startFallDetectionService() {
-        // Health Connect Worker 예약
+        // Health Connect Worker 예약 (15분 주기)
         schedulePeriodicSync()
 
         // Fall Detection Service 시작 (포그라운드)
@@ -187,12 +140,11 @@ class MainActivity : ComponentActivity() {
             startService(serviceIntent)
         }
         Log.d("SERVICE_START", "FallDetectionService 시작됨")
-        setupContent() // 서비스 시작 후 UI 설정
     }
 
     private fun schedulePeriodicSync() {
         val syncRequest = PeriodicWorkRequestBuilder<HealthSyncWorker>(
-            repeatInterval = 15,
+            repeatInterval = 15, // 15분으로 설정 (10분 주기를 위해선 10분으로 조정 필요)
             repeatIntervalTimeUnit = TimeUnit.MINUTES
         ).build()
 
@@ -212,8 +164,8 @@ class MainActivity : ComponentActivity() {
 
         if (!needsRequest) {
             startFallDetectionService()
+            setupContent() // 모든 권한이 있다면 여기서 UI 설정 시작
         } else {
-            // 권한이 부족하다면 런처를 통해 요청
             requestFallPermissionsLauncher.launch(FALL_DETECTION_PERMISSIONS)
         }
     }
@@ -228,18 +180,15 @@ class MainActivity : ComponentActivity() {
                     if (!healthConnectManager.hasAllPermissions(HC_PERMISSIONS)) {
                         requestPermissionLauncher.launch(HC_PERMISSIONS)
                     } else {
-                        // HC 권한이 있다면 바로 낙상 감지 권한 요청으로 연결
-                        requestFallDetectionPermissions()
+                        requestFallDetectionPermissions() // HC 권한이 있다면 바로 낙상 감지 권한 요청으로 연결
                     }
                 }
             }
             HealthConnectAvailability.NOT_INSTALLED, HealthConnectAvailability.NOT_SUPPORTED -> {
                 if (availability == HealthConnectAvailability.NOT_INSTALLED) {
-                    // Play 스토어로 이동 안내 로직 (선택적)
                     Toast.makeText(this, "Health Connect 설치/업데이트 필요.", Toast.LENGTH_LONG).show()
                 }
-                // Health Connect 사용 불가 시에도 낙상 감지 권한 요청은 실행
-                requestFallDetectionPermissions()
+                requestFallDetectionPermissions() // Health Connect 사용 불가 시에도 낙상 감지 권한 요청은 실행
             }
         }
     }
@@ -251,23 +200,39 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    // [통합] View Model 기반 LoginScreen과 Observer 호출
+                    val viewModel: LoginViewModel = viewModel()
                     LoginScreen(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        viewModel = viewModel
                     )
->>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
+
+                    LoginObserver(viewModel = viewModel)
                 }
             }
         }
     }
 }
 
-<<<<<<< HEAD
+//  독립 함수 및 Composable (로그인 및 UI)
+
 fun isAutoLoggedIn(context: Context): Boolean {
     val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     val isChecked = sharedPreferences.getBoolean(KEY_AUTO_LOGIN, false)
     val userNameSaved = sharedPreferences.getString(KEY_NAME, null)
 
     return isChecked && userNameSaved != null
+}
+
+fun saveLoginInfo(context: Context, name: String, gender: String, autoLogin: Boolean) {
+    val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    with(sharedPreferences.edit()) {
+        putString(KEY_NAME, name)
+        putString(KEY_GENDER, gender)
+        putBoolean(KEY_AUTO_LOGIN, autoLogin)
+        apply()
+    }
 }
 
 @Composable
@@ -298,17 +263,6 @@ fun LoginObserver(viewModel: LoginViewModel) {
     }
 }
 
-fun saveLoginInfo(context: Context, name: String, gender: String, autoLogin: Boolean) {
-    val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-    with(sharedPreferences.edit()) {
-        putString(KEY_NAME, name)
-        putString(KEY_GENDER, gender)
-        putBoolean(KEY_AUTO_LOGIN, autoLogin)
-        apply()
-    }
-}
-
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewModel()) {
     val context = LocalContext.current
@@ -318,21 +272,11 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
         factory = {
             val view = LayoutInflater.from(context).inflate(R.layout.login, null, false)
 
-=======
-// 기존 LoginScreen Composable 함수는 그대로 유지
-@Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
-    AndroidView(
-        modifier = modifier.fillMaxSize(),
-        factory = { context ->
-            val view = LayoutInflater.from(context).inflate(R.layout.login, null, false)
->>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
             val signUpButton = view.findViewById<MaterialButton>(R.id.btn_signup)
             signUpButton?.setOnClickListener {
                 val intent = Intent(context, SignUpActivity::class.java)
                 context.startActivity(intent)
             }
-<<<<<<< HEAD
 
             val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
             loginButton?.setOnClickListener {
@@ -347,14 +291,9 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 if (loginId.isEmpty() || password.isEmpty()) {
                     Toast.makeText(context, "아이디와 비밀번호를 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
                 } else {
+                    // ViewModel 로그인 호출
                     viewModel.login(loginId, password)
                 }
-=======
-            val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
-            loginButton?.setOnClickListener {
-                val intent = Intent(context, MainPageActivity::class.java)
-                context.startActivity(intent)
->>>>>>> 051e103096799e51629f301552ffd1c0542ca37d
             }
             view
         },
@@ -367,6 +306,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 @Composable
 fun LoginScreenPreview() {
     MyApplicationTheme {
+        // LoginScreen(viewModel = /* Preview ViewModel */)
         LoginScreen()
     }
 }
