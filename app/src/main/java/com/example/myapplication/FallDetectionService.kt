@@ -25,44 +25,58 @@ import android.telephony.SmsManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.example.myapplication.data.HealthConnectManager
+import com.example.myapplication.data.HealthConnectManager // [추가]
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope // [추가]
+import kotlinx.coroutines.Dispatchers // [추가]
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob // [추가]
+import kotlinx.coroutines.cancel // [추가]
+import kotlinx.coroutines.delay // [추가]
+import kotlinx.coroutines.launch // [추가]
 import kotlin.math.sqrt
 
 class FallDetectionService : Service(), SensorEventListener {
+
     private val TAG = "FallDetectionService"
+
+    // 센서 및 위치 클라이언트
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    // [추가] Health Connect 및 코루틴 설정
     private lateinit var healthConnectManager: HealthConnectManager
     private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob) // 서비스 범위 코루틴
+
+    // 보호자 전화번호 (사용자 입력값)
     private val GUARDIAN_PHONE_NUMBER = BuildConfig.PHONE_NUMBER
+
     private var lastSensorUpdateTime: Long = 0
     private var isFalling: Boolean = false
     private var fallConfirmed: Boolean = false
     private var fallStartTime: Long = 0
+
     private lateinit var handler: Handler
+
     private val CHANNEL_ID_SERVICE = "FallDetectionServiceChannel"
     private val NOTIFICATION_ID_SERVICE = 1
     private val CHANNEL_ID_ALERT = "FallAlertChannel"
     private val NOTIFICATION_ID_ALERT = 2
+
     private val IMPACT_THRESHOLD = 20.0f
     private val STILLNESS_THRESHOLD = 11.0f
     private val STILLNESS_TIME_MS = 1500L
     private val FALL_CONFIRMATION_DELAY_MS = 10000L
+
+    // [추가] 심박수/SpO2 위험 임계치 (테스트용)
     private val HR_CRITICAL_HIGH = 120.0
     private val HR_CRITICAL_LOW = 40.0
     private val SPO2_CRITICAL_LOW = 90.0
-    private val MONITORING_INTERVAL_MS = 60000L
+    private val MONITORING_INTERVAL_MS = 60000L // 1분 주기 모니터링
+
     private val SENT_ACTION = "SMS_SENT_STATUS"
 
     companion object {
@@ -77,8 +91,10 @@ class FallDetectionService : Service(), SensorEventListener {
         }
     }
 
+    // SMS 전송 결과를 처리할 BroadcastReceiver 정의
     private val smsSentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            // resultCode는 Activity.RESULT_OK (성공) 또는 SmsManager.RESULT_ERROR_XXX (실패) 중 하나입니다.
             when (resultCode) {
                 Activity.RESULT_OK -> Log.i(TAG, "SMS 최종 전송 성공: 통신사 발신 완료")
                 SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Log.e(TAG, "SMS 최종 전송 실패: 일반적인 오류 (GENERIC_FAILURE)")
@@ -91,10 +107,15 @@ class FallDetectionService : Service(), SensorEventListener {
     }
 
 
+    // =================================================================
+    //  Service Lifecycle
+    // =================================================================
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service Created")
 
+        // [추가] HealthConnectManager 초기화
         healthConnectManager = HealthConnectManager(applicationContext)
 
         handler = Handler(Looper.getMainLooper())
@@ -102,6 +123,7 @@ class FallDetectionService : Service(), SensorEventListener {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
+        // SMS 리시버 등록
         val receiverFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.RECEIVER_NOT_EXPORTED
         } else {
@@ -117,6 +139,7 @@ class FallDetectionService : Service(), SensorEventListener {
             Log.e(TAG, "Accelerometer not found on device.")
         }
 
+        // [추가] 1분 주기 심박수 모니터링 시작
         startHeartRateMonitoring()
     }
 
@@ -139,8 +162,10 @@ class FallDetectionService : Service(), SensorEventListener {
         handler.removeCallbacks(fallAlertRunnable)
         sensorManager.unregisterListener(this)
 
+        // [수정] 코루틴 작업 취소 및 리소스 해제
         serviceScope.cancel()
 
+        // 서비스 종료 시 리시버 해제
         try {
             unregisterReceiver(smsSentReceiver)
         } catch (e: IllegalArgumentException) {
@@ -150,32 +175,40 @@ class FallDetectionService : Service(), SensorEventListener {
         Log.d(TAG, "Service Destroyed")
     }
 
+    //  Heart Rate / SpO2 Monitoring Logic
+
+    /** 1분마다 심박수와 SpO2를 체크하여 위험 임계치를 벗어나는지 확인합니다. */
     private fun startHeartRateMonitoring() {
         serviceScope.launch {
             while (true) {
+                // 심박수 및 SpO2 조회 (최근 1분 데이터)
                 val avgBpm = healthConnectManager.readLatestHeartRateAvg(1)
-                val avgSpO2 = healthConnectManager.getFakeOxygenSaturation()
+                val avgSpO2 = healthConnectManager.getFakeOxygenSaturation() // 가짜 데이터 사용
 
                 Log.d(TAG, "HR Monitor: BPM=$avgBpm, SpO2=$avgSpO2")
 
+                // 1. 심박수 위험 임계치 체크
                 if (avgBpm > HR_CRITICAL_HIGH || (avgBpm > 0.0 && avgBpm < HR_CRITICAL_LOW)) {
-                    val message = if (avgBpm > HR_CRITICAL_HIGH) "🚨 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
+                    val message = if (avgBpm > HR_CRITICAL_HIGH) " 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
                     else "심박수 급격한 하락 감지: ${"%.1f".format(avgBpm)} BPM"
                     Log.e(TAG, message)
                     getLocationAndSendAlert(isImmediate = true, customMessage = message)
                 }
 
+                // 2. SpO2 위험 임계치 체크
                 if (avgSpO2 > 0.0 && avgSpO2 < SPO2_CRITICAL_LOW) {
                     val message = "산소포화도 임계치 이하 감지: ${"%.1f".format(avgSpO2)}%"
                     Log.e(TAG, message)
                     getLocationAndSendAlert(isImmediate = true, customMessage = message)
                 }
 
-                delay(MONITORING_INTERVAL_MS)
+                delay(MONITORING_INTERVAL_MS) // 1분 대기
             }
         }
     }
 
+
+    //  Sensor Event Listener (동일)
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
@@ -197,7 +230,10 @@ class FallDetectionService : Service(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // 사용하지 않음
     }
+
+    //  Core Fall Detection Logic (동일)
 
     private fun detectFall(magnitude: Float, currentTime: Long) {
         if (!isFalling) {
@@ -229,6 +265,9 @@ class FallDetectionService : Service(), SensorEventListener {
         }
     }
 
+    //  State Management (동일)
+
+    /** 낙상 감지 상태를 초기화하고 타이머를 취소 */
     private fun resetFallState() {
         isFalling = false
         fallConfirmed = false
@@ -238,6 +277,7 @@ class FallDetectionService : Service(), SensorEventListener {
         Log.d(TAG, "Fall detection state reset.")
     }
 
+    /** Activity에서 '괜찮아요' 버튼을 눌렀을 때 호출되어 알림 전송을 취소 */
     private fun cancelFallDetection() {
         if (isFalling && fallConfirmed) {
             Log.i(TAG, "Fall Alert CANCELLED by user.")
@@ -245,11 +285,15 @@ class FallDetectionService : Service(), SensorEventListener {
         }
     }
 
+    //  Alerting and Location
+
+    /** 최종적으로 위치를 획득하고 SMS/Kakao 알림을 전송하는 함수 */
     private fun getLocationAndSendAlert(isImmediate: Boolean = false, customMessage: String? = null) {
         val alertType = if (isImmediate) "IMMEDIATE ALERT (HR/SpO2)" else "FINAL FALL ALERT"
         Log.e(TAG, "--- $alertType TRIGGERED ---")
 
-        val baseMessage = customMessage ?: "🚨 긴급 낙상 감지! 🚨"
+        // 최종 메시지를 결정합니다.
+        val baseMessage = customMessage ?: "긴급 낙상 감지!"
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "위치 권한이 없어 알림을 전송할 수 없습니다.")
@@ -266,6 +310,7 @@ class FallDetectionService : Service(), SensorEventListener {
                     val mapLink = "http://maps.google.com/maps?q=$latitude,$longitude"
                     val fullMessage = "$baseMessage 현재 위치: $mapLink"
                     sendSms(GUARDIAN_PHONE_NUMBER, fullMessage)
+                    // sendKakaoAlert(latitude, longitude)
                 } else {
                     Log.w(TAG, "위치 정보를 가져올 수 없습니다. 일반 메시지만 전송합니다.")
                     sendSms(GUARDIAN_PHONE_NUMBER, "$baseMessage 위치 정보 획득 실패.")
@@ -283,6 +328,7 @@ class FallDetectionService : Service(), SensorEventListener {
             return
         }
 
+        // Coroutine을 사용하여 전송 로직을 비동기로 실행
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -299,8 +345,10 @@ class FallDetectionService : Service(), SensorEventListener {
 
                 val parts = smsManager.divideMessage(message)
 
+                // 타입 오류 해결: MutableList로 명시적 변환
                 val sentIntents = List(parts.size) { sentIntent }.toMutableList()
 
+                // sendMultipartTextMessage을 사용하여 메시지 분할 전송
                 smsManager.sendMultipartTextMessage(
                     phoneNumber,
                     null,
@@ -322,6 +370,9 @@ class FallDetectionService : Service(), SensorEventListener {
         Log.d(TAG, "Kakao Alert implementation needed.")
     }
 
+    //  Notification Handlers (동일)
+
+    /** 포그라운드 서비스 알림 (백그라운드 실행 유지용) */
     private fun createServiceNotification(): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
@@ -341,6 +392,7 @@ class FallDetectionService : Service(), SensorEventListener {
             .build()
     }
 
+    /* 낙상 확정 시 10초 대기 알림 (취소 버튼 포함) */
     private fun triggerConfirmationNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val alertChannel = NotificationChannel(
