@@ -189,7 +189,7 @@ class FallDetectionService : Service(), SensorEventListener {
 
                 // 1. 심박수 위험 임계치 체크
                 if (avgBpm > HR_CRITICAL_HIGH || (avgBpm > 0.0 && avgBpm < HR_CRITICAL_LOW)) {
-                    val message = if (avgBpm > HR_CRITICAL_HIGH) "🚨 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
+                    val message = if (avgBpm > HR_CRITICAL_HIGH) " 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
                     else "심박수 급격한 하락 감지: ${"%.1f".format(avgBpm)} BPM"
                     Log.e(TAG, message)
                     getLocationAndSendAlert(isImmediate = true, customMessage = message)
@@ -265,11 +265,9 @@ class FallDetectionService : Service(), SensorEventListener {
         }
     }
 
-    // =================================================================
     //  State Management (동일)
-    // =================================================================
 
-    /** 낙상 감지 상태를 초기화하고 타이머를 취소합니다. */
+    /** 낙상 감지 상태를 초기화하고 타이머를 취소 */
     private fun resetFallState() {
         isFalling = false
         fallConfirmed = false
@@ -279,7 +277,7 @@ class FallDetectionService : Service(), SensorEventListener {
         Log.d(TAG, "Fall detection state reset.")
     }
 
-    /** Activity에서 '괜찮아요' 버튼을 눌렀을 때 호출되어 알림 전송을 취소합니다. */
+    /** Activity에서 '괜찮아요' 버튼을 눌렀을 때 호출되어 알림 전송을 취소 */
     private fun cancelFallDetection() {
         if (isFalling && fallConfirmed) {
             Log.i(TAG, "Fall Alert CANCELLED by user.")
@@ -287,9 +285,7 @@ class FallDetectionService : Service(), SensorEventListener {
         }
     }
 
-    // =================================================================
     //  Alerting and Location
-    // =================================================================
 
     /** 최종적으로 위치를 획득하고 SMS/Kakao 알림을 전송하는 함수 */
     private fun getLocationAndSendAlert(isImmediate: Boolean = false, customMessage: String? = null) {
@@ -297,7 +293,7 @@ class FallDetectionService : Service(), SensorEventListener {
         Log.e(TAG, "--- $alertType TRIGGERED ---")
 
         // 최종 메시지를 결정합니다.
-        val baseMessage = customMessage ?: "🚨 긴급 낙상 감지! 🚨"
+        val baseMessage = customMessage ?: "긴급 낙상 감지!"
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "위치 권한이 없어 알림을 전송할 수 없습니다.")

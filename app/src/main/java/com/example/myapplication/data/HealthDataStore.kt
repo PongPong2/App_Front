@@ -21,7 +21,6 @@ private val PREF_PREVIOUS_CALORIES_TOTAL = doublePreferencesKey("previous_calori
  */
 class HealthDataStore(private val context: Context) {
 
-    // --- 걸음 수 저장/로드 ---
 
     /**
      * 이전에 저장된 총 걸음수(Double 형태로 저장된 값)\
@@ -45,7 +44,7 @@ class HealthDataStore(private val context: Context) {
         }
     }
 
-    // --- 칼로리 저장/로드 ---
+    // 칼로리 저장/로드
 
     /**
      * 이전에 저장된 총 소모 칼로리(Double)
