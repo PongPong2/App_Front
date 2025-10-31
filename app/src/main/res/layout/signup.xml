@@ -111,6 +111,27 @@
                 android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="생년월일 (YYYY-MM-DD)"
+            android:focusable="false"
+            android:clickable="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_birthday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardvariable"
+                android:textStyle="bold"
+                android:inputType="none"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <RadioGroup
             android:id="@+id/radio_group_gender"
             android:layout_width="match_parent"
