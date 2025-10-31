@@ -56,11 +56,22 @@ class LoginActivity : AppCompatActivity() {
 
                     if (response.isSuccessful) {
                         val loginResponse = response.body()
-                        val token = loginResponse?.accessToken
+                        loginResponse?.accessToken
 
-                        Toast.makeText(this@LoginActivity, "로그인 성공! 사용자: ${loginResponse?.username}", Toast.LENGTH_LONG).show()
+                        // ✨ 수정된 로직:
+                        // 1. 서버 응답 객체의 'name' 필드 (DB 이름 필드로 추정)를 사용합니다.
+                        // 2. 만약 name 필드 값이 null이면, ID가 노출되지 않도록 빈 문자열("")을 사용합니다.
+                        //    (LoginResponse 데이터 클래스에 name 필드가 추가되었다고 가정합니다.)
+                        val savedName = loginResponse?.name ?: ""
+                        val savedGender = loginResponse?.gender ?: "중성"
+                        val autoLoginChecked = binding.checkAutoLogin.isChecked
 
-                        // 로그인 성공 후 메인 페이지로 이동
+                        Log.d("LOGIN_SUCCESS", "서버 응답 이름: $savedName, 성별: $savedGender")
+
+                        saveLoginInfo(this@LoginActivity, savedName, savedGender, autoLoginChecked)
+
+                        Toast.makeText(this@LoginActivity, "안녕하세요! ${savedName}님!", Toast.LENGTH_LONG).show()
+
                         val intent = Intent(this@LoginActivity, MainPageActivity::class.java)
                         startActivity(intent)
                         finish()
