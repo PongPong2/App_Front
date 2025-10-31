@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,6 +6,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.API.RetrofitClient
+import com.example.myapplication.activity.MainPageActivity
+import com.example.myapplication.activity.SignUpActivity
+import com.example.myapplication.data_model.LoginRequest
 import com.example.myapplication.databinding.LoginBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,12 +61,7 @@ class LoginActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         val loginResponse = response.body()
                         loginResponse?.accessToken
-
-                        // ✨ 수정된 로직:
-                        // 1. 서버 응답 객체의 'name' 필드 (DB 이름 필드로 추정)를 사용합니다.
-                        // 2. 만약 name 필드 값이 null이면, ID가 노출되지 않도록 빈 문자열("")을 사용합니다.
-                        //    (LoginResponse 데이터 클래스에 name 필드가 추가되었다고 가정합니다.)
-                        val savedName = loginResponse?.name ?: ""
+                        val savedName = loginResponse?.username ?: ""
                         val savedGender = loginResponse?.gender ?: "중성"
                         val autoLoginChecked = binding.checkAutoLogin.isChecked
 
@@ -70,14 +69,22 @@ class LoginActivity : AppCompatActivity() {
 
                         saveLoginInfo(this@LoginActivity, savedName, savedGender, autoLoginChecked)
 
-                        Toast.makeText(this@LoginActivity, "안녕하세요! ${savedName}님!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "안녕하세요! ${savedName}님!",
+                            Toast.LENGTH_LONG
+                        ).show()
 
                         val intent = Intent(this@LoginActivity, MainPageActivity::class.java)
                         startActivity(intent)
                         finish()
                     } else {
                         val errorBody = response.errorBody()?.string() ?: "알 수 없는 오류"
-                        Toast.makeText(this@LoginActivity, "로그인 실패: ${response.code()}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "로그인 실패: ${response.code()}",
+                            Toast.LENGTH_LONG
+                        ).show()
                         Log.e("LOGIN_FAIL", "Error Code: ${response.code()}, Body: $errorBody")
                     }
                 }
@@ -85,7 +92,8 @@ class LoginActivity : AppCompatActivity() {
                 Log.e("LOGIN_ERROR", "Exception: ${e.message}")
                 withContext(Dispatchers.Main) {
                     binding.btnLogin.isEnabled = true
-                    Toast.makeText(this@LoginActivity, "네트워크 연결 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@LoginActivity, "네트워크 연결 오류가 발생했습니다.", Toast.LENGTH_LONG)
+                        .show()
                 }
             }
         }

@@ -1,15 +1,14 @@
-package com.example.myapplication
+package com.example.myapplication.activity
 
 import android.os.Bundle
-
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.activity.viewModels
+import com.example.myapplication.data_model.UserRegistrationRequest
+import com.example.myapplication.data_state.RegistrationState
 import com.example.myapplication.databinding.SignupBinding
-import com.example.myapplication.data.request.UserRegistrationRequest
 import com.example.myapplication.viewmodel.SignUpViewModel
-import com.example.myapplication.viewmodel.RegistrationState
 import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
@@ -68,6 +67,7 @@ class SignUpActivity : AppCompatActivity() {
             password = password,
             username = name,
             gender = gender,
+            birth = "test",
             caregiverId = null
         )
 
@@ -93,4 +93,3 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 }
-

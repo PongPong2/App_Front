@@ -1,4 +1,4 @@
-package com.example.myapplication.viewmodel
+package com.example.myapplication.data_state
 
 sealed interface RegistrationState {
     data object Idle : RegistrationState

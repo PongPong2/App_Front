@@ -1,8 +1,9 @@
-package com.example.myapplication
+package com.example.myapplication.API
 
+import com.example.myapplication.API.UserService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.example.myapplication.network.service.UserService
+
 object RetrofitClient {
 
     private const val BASE_URL = "http://192.168.1.102:8080"

@@ -1,4 +1,5 @@
-package com.example.myapplication
+package com.example.myapplication.data_state
+
 sealed interface LoginState {
 
     val isLoggedIn: Boolean

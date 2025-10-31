@@ -93,6 +93,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation("com.google.code.gson:gson:2.10.1")
 
     val kakaoSdkVersion = "2.21.0"
     implementation("com.kakao.sdk:v2-share:$kakaoSdkVersion")

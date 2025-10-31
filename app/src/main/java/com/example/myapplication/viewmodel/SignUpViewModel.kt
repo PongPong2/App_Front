@@ -2,9 +2,10 @@ package com.example.myapplication.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.request.UserRegistrationRequest
-import com.example.myapplication.RetrofitClient
-import com.example.myapplication.network.service.UserService
+import com.example.myapplication.API.RetrofitClient
+import com.example.myapplication.API.UserService
+import com.example.myapplication.data_model.UserRegistrationRequest
+import com.example.myapplication.data_state.RegistrationState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

@@ -1,7 +1,10 @@
-package com.example.myapplication
+package com.example.myapplication.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.API.RetrofitClient
+import com.example.myapplication.data_model.LoginRequest
+import com.example.myapplication.data_state.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,10 +25,11 @@ class LoginViewModel : ViewModel() {
             try {
                 val request = LoginRequest(loginId, password)
                 val response = authService.login(request)
+//                Log.d("LoginViewModel", "Response: $response")
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    _loginState.value = LoginState.Success(body?.accessToken, body?.name)
+                    _loginState.value = LoginState.Success(body?.accessToken, body?.username)
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "인증 실패"
                     _loginState.value = LoginState.Error(errorMsg)

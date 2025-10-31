@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.data_model
 
 data class Post(
     val userId: Int,

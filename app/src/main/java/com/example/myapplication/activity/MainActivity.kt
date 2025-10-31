@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.activity
 
 import android.Manifest
 import android.content.Context
@@ -44,12 +44,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.FallDetectionService
+import com.example.myapplication.KEY_AUTO_LOGIN
+import com.example.myapplication.KEY_GENDER
+import com.example.myapplication.KEY_NAME
+import com.example.myapplication.activity.MainPageActivity
+import com.example.myapplication.PREFS_NAME
+import com.example.myapplication.R
+import com.example.myapplication.activity.SignUpActivity
+import com.example.myapplication.data_state.LoginState
+import com.example.myapplication.viewmodel.LoginViewModel
+import com.example.myapplication.util.BirthDateTextWatcher
 
-// Constants.kt 파일에 정의되어야 할 상수들입니다. (여기서는 제거됨)
-// const val PREFS_NAME = "LOGIN_PREFS"
-// const val KEY_NAME = "user_name"
-// const val KEY_GENDER = "user_gender"
-// const val KEY_AUTO_LOGIN = "auto_login"
 
 class MainActivity : ComponentActivity() {
 
@@ -64,7 +70,7 @@ class MainActivity : ComponentActivity() {
         }
 
         private fun performLogout(context: Context) {
-            val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val sharedPreferences = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
             with(sharedPreferences.edit()) {
                 clear()
                 apply()
@@ -249,14 +255,8 @@ fun LoginObserver(viewModel: LoginViewModel) {
     LaunchedEffect(loginState.value.isLoggedIn) {
         when (val state = loginState.value) {
             is LoginState.Success -> {
-                // 이전에 하드코딩되어 있던 "김환자" 저장 로직을 모두 제거했습니다.
-                // 실제 이름/성별 저장은 LoginActivity에서 담당합니다.
 
                 val intent = Intent(context, MainPageActivity::class.java)
-
-                // Intent에 정보를 담아 전달하는 대신, MainPageActivity가 SharedPreference에서 직접 로드하도록 했습니다.
-                // 만약 LoginActivity에서 Intent에 데이터를 담아줬다면, 이 부분은 문제가 될 수 있습니다.
-                // 하지만 현재는 LoginActivity가 SharedPreference에 저장하는 흐름을 사용하기 때문에 Intent Extra는 제거합니다.
 
                 context.startActivity(intent)
 
@@ -275,23 +275,28 @@ fun LoginObserver(viewModel: LoginViewModel) {
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewModel()) {
     val context = LocalContext.current
 
-    AndroidView(
-        modifier = modifier.fillMaxSize(),
+    AndroidView(modifier = modifier.fillMaxSize(),
         factory = {
-            val view = LayoutInflater.from(context).inflate(R.layout.login, null, false)
-
+            val view = LayoutInflater.from(it).inflate(R.layout.login, null, false)
+            // factory 상단에서 모든 뷰를 한 번만 찾습니다.
+            val loginIdInput = view.findViewById<TextInputEditText>(R.id.input_id)
+            val passwordInput = view.findViewById<TextInputEditText>(R.id.input_password)
+            val birthDateInput = view.findViewById<TextInputEditText>(R.id.input_birth_date)
+            val autoLoginCheckBox = view.findViewById<CheckBox>(R.id.check_auto_login)
+            val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
             val signUpButton = view.findViewById<MaterialButton>(R.id.btn_signup)
+            birthDateInput?.addTextChangedListener(BirthDateTextWatcher(birthDateInput))
+
+            // 회원가입 버튼 리스너
             signUpButton?.setOnClickListener {
                 val intent = Intent(context, SignUpActivity::class.java)
                 context.startActivity(intent)
             }
 
-            val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
+            // 로그인 버튼 리스너
             loginButton?.setOnClickListener {
-                val loginId = view.findViewById<TextInputEditText>(R.id.input_id)?.text?.toString() ?: ""
-                val password = view.findViewById<TextInputEditText>(R.id.input_password)?.text?.toString() ?: ""
-
-                val autoLoginCheckBox = view.findViewById<CheckBox>(R.id.check_auto_login)
+                val loginId = loginIdInput?.text?.toString() ?: ""
+                val password = passwordInput?.text?.toString() ?: ""
                 val isChecked = autoLoginCheckBox?.isChecked ?: false
 
                 MainActivity.isAutoLoginCheckedState = isChecked
@@ -304,10 +309,12 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
             }
             view
         },
-        update = { view ->
+        update = {
+            // factory에서 모든 리스너가 설정되었으므로, update 블록은 비워둡니다.
         }
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable

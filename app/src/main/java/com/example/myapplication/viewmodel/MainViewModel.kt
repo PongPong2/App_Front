@@ -1,7 +1,8 @@
-package com.example.myapplication
+package com.example.myapplication.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.API.RetrofitClient
 import kotlinx.coroutines.launch
 import java.io.IOException
 
