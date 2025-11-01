@@ -13,7 +13,7 @@ data class UserRegistrationRequest(
     val username: String,
 
     @SerializedName("birthday") // 서버의 #{birthdate}와 매칭되도록 "birth"에서 "birthdate"로 변경
-    val birth: String,
+    val birthday: String,
 
     @SerializedName("gender") // 서버의 #{gender}와 매칭
     val gender: String,

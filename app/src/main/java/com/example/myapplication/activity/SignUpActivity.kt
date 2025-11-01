@@ -67,7 +67,7 @@ class SignUpActivity : AppCompatActivity() {
             password = password,
             username = name,
             gender = gender,
-            birth = "test",
+            birthday = "test",
             caregiverId = null
         )
 
