@@ -25,16 +25,16 @@ import android.telephony.SmsManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.example.myapplication.data.HealthConnectManager // [추가]
+import com.example.myapplication.data.HealthConnectManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.CoroutineScope // [추가]
-import kotlinx.coroutines.Dispatchers // [추가]
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.SupervisorJob // [추가]
-import kotlinx.coroutines.cancel // [추가]
-import kotlinx.coroutines.delay // [추가]
-import kotlinx.coroutines.launch // [추가]
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class FallDetectionService : Service(), SensorEventListener {
@@ -46,7 +46,7 @@ class FallDetectionService : Service(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    // [추가] Health Connect 및 코루틴 설정
+    // Health Connect 및 코루틴 설정
     private lateinit var healthConnectManager: HealthConnectManager
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob) // 서비스 범위 코루틴
@@ -66,12 +66,13 @@ class FallDetectionService : Service(), SensorEventListener {
     private val CHANNEL_ID_ALERT = "FallAlertChannel"
     private val NOTIFICATION_ID_ALERT = 2
 
-    private val IMPACT_THRESHOLD = 20.0f
+    // 💡 수정된 임계치: 민감도 조정
+    private val IMPACT_THRESHOLD = 35.0f // 초기 충격 임계값 상향 (20.0f -> 35.0f)
     private val STILLNESS_THRESHOLD = 11.0f
-    private val STILLNESS_TIME_MS = 1500L
+    private val STILLNESS_TIME_MS = 2000L // 정지 확인 시간 연장 (1500L -> 2000L, 2초)
     private val FALL_CONFIRMATION_DELAY_MS = 10000L
 
-    // [추가] 심박수/SpO2 위험 임계치 (테스트용)
+    // 심박수/SpO2 위험 임계치 (테스트용)
     private val HR_CRITICAL_HIGH = 120.0
     private val HR_CRITICAL_LOW = 40.0
     private val SPO2_CRITICAL_LOW = 90.0
@@ -115,7 +116,7 @@ class FallDetectionService : Service(), SensorEventListener {
         super.onCreate()
         Log.d(TAG, "Service Created")
 
-        // [추가] HealthConnectManager 초기화
+        // HealthConnectManager 초기화
         healthConnectManager = HealthConnectManager(applicationContext)
 
         handler = Handler(Looper.getMainLooper())
@@ -139,7 +140,7 @@ class FallDetectionService : Service(), SensorEventListener {
             Log.e(TAG, "Accelerometer not found on device.")
         }
 
-        // [추가] 1분 주기 심박수 모니터링 시작
+        // 1분 주기 심박수 모니터링 시작
         startHeartRateMonitoring()
     }
 
@@ -162,7 +163,7 @@ class FallDetectionService : Service(), SensorEventListener {
         handler.removeCallbacks(fallAlertRunnable)
         sensorManager.unregisterListener(this)
 
-        // [수정] 코루틴 작업 취소 및 리소스 해제
+        // 코루틴 작업 취소 및 리소스 해제
         serviceScope.cancel()
 
         // 서비스 종료 시 리시버 해제
@@ -187,7 +188,7 @@ class FallDetectionService : Service(), SensorEventListener {
 
                 Log.d(TAG, "HR Monitor: BPM=$avgBpm, SpO2=$avgSpO2")
 
-                // 1. 심박수 위험 임계치 체크
+                // 심박수 위험 임계치 체크
                 if (avgBpm > HR_CRITICAL_HIGH || (avgBpm > 0.0 && avgBpm < HR_CRITICAL_LOW)) {
                     val message = if (avgBpm > HR_CRITICAL_HIGH) " 심박수 급격한 상승 감지: ${"%.1f".format(avgBpm)} BPM"
                     else "심박수 급격한 하락 감지: ${"%.1f".format(avgBpm)} BPM"
@@ -195,7 +196,7 @@ class FallDetectionService : Service(), SensorEventListener {
                     getLocationAndSendAlert(isImmediate = true, customMessage = message)
                 }
 
-                // 2. SpO2 위험 임계치 체크
+                // SpO2 위험 임계치 체크
                 if (avgSpO2 > 0.0 && avgSpO2 < SPO2_CRITICAL_LOW) {
                     val message = "산소포화도 임계치 이하 감지: ${"%.1f".format(avgSpO2)}%"
                     Log.e(TAG, message)
@@ -208,7 +209,6 @@ class FallDetectionService : Service(), SensorEventListener {
     }
 
 
-    //  Sensor Event Listener (동일)
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
@@ -232,8 +232,6 @@ class FallDetectionService : Service(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // 사용하지 않음
     }
-
-    //  Core Fall Detection Logic (동일)
 
     private fun detectFall(magnitude: Float, currentTime: Long) {
         if (!isFalling) {

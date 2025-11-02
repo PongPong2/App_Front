@@ -86,6 +86,10 @@ class MainActivity : ComponentActivity() {
 
         // 자동 로그인 체크 (로그인 로직)
         if (isAutoLoggedIn(this)) {
+            // 자동 로그인 성공 시, 서비스를 즉시 시작
+            // startFallDetectionService() 호출: 서비스 시작은 인증 후 바로 이루어져야 함.
+            startFallDetectionService()
+
             val intent = Intent(this, MainPageActivity::class.java)
             startActivity(intent)
             finish()
@@ -106,7 +110,8 @@ class MainActivity : ComponentActivity() {
             } else {
                 Toast.makeText(this, "Health Connect 권한 부족", Toast.LENGTH_LONG).show()
             }
-            requestFallDetectionPermissions() // HC 권한 처리 후, 낙상 감지 권한 요청으로 연결
+            // HC 권한 획득 후, 낙상 감지 권한 요청으로 연결
+            requestFallDetectionPermissions()
         }
 
         // 낙상 감지 서비스 권한 요청 런처 정의
@@ -116,20 +121,21 @@ class MainActivity : ComponentActivity() {
             val granted = permissions.entries.all { it.value }
             if (granted) {
                 Toast.makeText(this, "위치/SMS 권한 획득 완료", Toast.LENGTH_SHORT).show()
-                startFallDetectionService() // 권한 성공 시 서비스 시작
-                setupContent() // 서비스 시작 후 UI 설정 (Login)
+                // 여기서 서비스 시작 로직 제거 (로그인 성공 시 시작)
             } else {
                 Toast.makeText(this, "구조 요청 기능이 제한됩니다.", Toast.LENGTH_LONG).show()
-                setupContent() // 서비스 시작 실패 시에도 UI는 표시
             }
         }
+        setupContent()
 
-        // 로직 시작: Health Connect 가용성 확인 및 권한 요청으로 시작
-        checkHealthConnectAndRequestPermissions()
+        // onCreate에서 서비스 시작 로직 제거. 권한 확인만 수행.
+        // checkHealthConnectAndRequestPermissions()
     }
 
+    // ----------------------------------------------------------------------------------
+    // 서비스를 시작하는 함수는 그대로 유지
     private fun startFallDetectionService() {
-        // Health Connect Worker 예약 (15분 주기)
+        // Health Connect Worker 예약 (10분 주기)
         schedulePeriodicSync()
 
         // Fall Detection Service 시작 (포그라운드)
@@ -144,7 +150,7 @@ class MainActivity : ComponentActivity() {
 
     private fun schedulePeriodicSync() {
         val syncRequest = PeriodicWorkRequestBuilder<HealthSyncWorker>(
-            repeatInterval = 15, // 15분으로 설정 (10분 주기를 위해선 10분으로 조정 필요)
+            repeatInterval = 10, // 10분으로 설정 (10분 주기를 위해선 10분으로)
             repeatIntervalTimeUnit = TimeUnit.MINUTES
         ).build()
 
@@ -163,13 +169,13 @@ class MainActivity : ComponentActivity() {
         val needsRequest = !(hasFineLocation && hasSendSms)
 
         if (!needsRequest) {
-            startFallDetectionService()
-            setupContent() // 모든 권한이 있다면 여기서 UI 설정 시작
+            // 여기서 서비스 시작 로직 제거 (로그인 성공 시 시작)
         } else {
             requestFallPermissionsLauncher.launch(FALL_DETECTION_PERMISSIONS)
         }
     }
 
+    // 이 함수는 권한 요청만 수행하며, 서비스 시작 로직을 제거
     private fun checkHealthConnectAndRequestPermissions() {
         healthConnectManager.checkAvailability()
         val availability = healthConnectManager.availability.value
@@ -207,7 +213,15 @@ class MainActivity : ComponentActivity() {
                         viewModel = viewModel
                     )
 
-                    LoginObserver(viewModel = viewModel)
+                    // LoginObserver에 서비스 시작 함수 전달
+                    LoginObserver(
+                        viewModel = viewModel,
+                        onLoginSuccess = {
+                            // 로그인 성공 시 권한 확인 및 서비스 시작
+                            checkHealthConnectAndRequestPermissions()
+                            startFallDetectionService()
+                        }
+                    )
                 }
             }
         }
@@ -235,8 +249,9 @@ fun saveLoginInfo(context: Context, name: String, gender: String, autoLogin: Boo
     }
 }
 
+// 콜백 함수 파라미터 추가
 @Composable
-fun LoginObserver(viewModel: LoginViewModel) {
+fun LoginObserver(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
     val loginState = viewModel.loginState.collectAsState()
     val context = LocalContext.current
 
@@ -248,6 +263,9 @@ fun LoginObserver(viewModel: LoginViewModel) {
 
                 val autoLoginState = MainActivity.isAutoLoginCheckedState
                 saveLoginInfo(context, name, gender, autoLoginState)
+
+                // 로그인 성공 시 서비스 시작 로직 호출
+                onLoginSuccess()
 
                 val intent = Intent(context, MainPageActivity::class.java)
                 context.startActivity(intent)
@@ -265,6 +283,7 @@ fun LoginObserver(viewModel: LoginViewModel) {
 
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewModel()) {
+    // ... (기존 LoginScreen 로직 유지) ...
     val context = LocalContext.current
 
     AndroidView(

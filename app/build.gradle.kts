@@ -29,7 +29,6 @@ android {
 
         manifestPlaceholders["K_API_KEY"] = gradleLocalProperties(rootDir, providers)
             .getProperty("KAKAO_API_KEY") ?: "DEFAULT_KAKAO_KEY"
-
     }
 
     buildTypes {

@@ -7,6 +7,8 @@ import com.example.myapplication.network.service.UserService
 object RetrofitClient {
 //    private const val BASE_URL = "http://10.32.31.66:8080/"
 
+
+
     
     //이거 바꾸셔야함
     private const val BASE_URL = "http://192.168.1.109:8080"
