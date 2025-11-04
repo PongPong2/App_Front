@@ -8,6 +8,7 @@ import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.data.HealthDataStore
 import androidx.health.connect.client.records.SleepSessionRecord
 import com.example.myapplication.RetrofitClient
+import com.example.myapplication.SharedPrefsManager
 import com.example.myapplication.domain.HealthRequest
 import java.time.*
 import java.time.temporal.ChronoUnit
@@ -21,13 +22,18 @@ class HealthSyncWorker(
     private val healthConnectManager = HealthConnectManager(appContext)
     private val dataStore = HealthDataStore(appContext)
 
-    private val silverId = "test1234"
+    private val prefsManager = SharedPrefsManager(appContext)
     private val gender = 'F'
     private val age = 70
 
     private val RHR_DEFAULT = 0.0
 
     override suspend fun doWork(): Result {
+        val silverId = prefsManager.getSilverId()
+        if (silverId.isNullOrEmpty()) {
+            Log.w("WORKER", "HealthSyncWorker 실행 실패: 로그인된 사용자 ID를 찾을 수 없습니다.")
+            return Result.failure() // ID 없으면 실패 처리
+        }
         Log.d("WORKER", "HealthSyncWorker 실행됨 (10분 주기)")
 
         val endTime = Instant.now()
@@ -111,7 +117,7 @@ class HealthSyncWorker(
             )
 
             // RetrofitClient.apiService.sendHealthData(healthData) // 이 코드를 활성화하여 서버로 전송
-            RetrofitClient.healthService.createHealthData(healthRequest)
+//            RetrofitClient.healthService.createHealthData(healthRequest)
             val logMessage = "서버 전송 데이터 - 걸음: ${newSteps}보, 칼로리: %.2f kcal, 심박수: %.1f bpm, RHR: ${RHR_DEFAULT}"
                 .format(newCalories.toDouble(), safeHeartRate)
             Log.d("WORKER", logMessage)

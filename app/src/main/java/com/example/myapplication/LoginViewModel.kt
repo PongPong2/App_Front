@@ -25,7 +25,7 @@ class LoginViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    _loginState.value = LoginState.Success(body?.accessToken, body?.username)
+                    _loginState.value = LoginState.Success(body?.accessToken, body?.name, body?.loginId, body?.gender)
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "인증 실패"
                     _loginState.value = LoginState.Error(errorMsg)

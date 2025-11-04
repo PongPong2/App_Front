@@ -7,6 +7,6 @@ import retrofit2.http.POST
 
 interface UserService {
 
-    @POST("api/users")
+    @POST("api/signup")
     suspend fun registerUser(@Body request: UserRegistrationRequest): Response<Void>
 }

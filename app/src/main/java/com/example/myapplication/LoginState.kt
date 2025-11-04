@@ -14,7 +14,9 @@ sealed interface LoginState {
 
     data class Success(
         val accessToken: String?,
-        val username: String?
+        val username: String?,
+        val loginId: String?,
+        val gender: String?
     ) : LoginState {
         override val isLoggedIn: Boolean = true
     }

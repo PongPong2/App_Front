@@ -190,7 +190,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:fontFamily="@font/pretendardvariable"
-                                        android:text="나이"
+                                        android:text="성별"
                                         android:textColor="@android:color/black"
                                         android:textSize="16sp"
                                         android:textStyle="bold" />
@@ -417,7 +417,7 @@
                         android:paddingEnd="16dp">
 
                         <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btn4"
+                            android:id="@+id/M_Input_Submit"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal"

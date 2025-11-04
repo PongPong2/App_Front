@@ -58,7 +58,7 @@ class LoginActivity : AppCompatActivity() {
                         val loginResponse = response.body()
                         val token = loginResponse?.accessToken
 
-                        Toast.makeText(this@LoginActivity, "로그인 성공! 사용자: ${loginResponse?.username}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@LoginActivity, "로그인 성공! 사용자: ${loginResponse?.name}", Toast.LENGTH_LONG).show()
 
                         // 로그인 성공 후 메인 페이지로 이동
                         val intent = Intent(this@LoginActivity, MainPageActivity::class.java)

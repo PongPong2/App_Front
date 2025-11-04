@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +44,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import com.example.myapplication.workers.DailyBloodPressureWorker
+import java.time.Duration
+import java.time.LocalTime
 
 // SharedPreferences 상수
 const val PREFS_NAME = "LOGIN_PREFS"
@@ -78,24 +82,16 @@ class MainActivity : ComponentActivity() {
     private val FALL_DETECTION_PERMISSIONS = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.SEND_SMS,
-        Manifest.permission.POST_NOTIFICATIONS
-    )
+        Manifest.permission.POST_NOTIFICATIONS,
+        // [추가] Android 14 (API 34) 이상 FGS 위치 서비스 실행에 필요
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) Manifest.permission.FOREGROUND_SERVICE_LOCATION else ""
+    ).filter { it.isNotEmpty() }.toTypedArray()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
-        // 자동 로그인 체크 (로그인 로직)
-        if (isAutoLoggedIn(this)) {
-            // 자동 로그인 성공 시, 서비스를 즉시 시작
-            // startFallDetectionService() 호출: 서비스 시작은 인증 후 바로 이루어져야 함.
-            startFallDetectionService()
-
-            val intent = Intent(this, MainPageActivity::class.java)
-            startActivity(intent)
-            finish()
-            return
-        }
-
+        RetrofitClient.initialize(applicationContext)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -121,15 +117,33 @@ class MainActivity : ComponentActivity() {
             val granted = permissions.entries.all { it.value }
             if (granted) {
                 Toast.makeText(this, "위치/SMS 권한 획득 완료", Toast.LENGTH_SHORT).show()
-                // 여기서 서비스 시작 로직 제거 (로그인 성공 시 시작)
             } else {
                 Toast.makeText(this, "구조 요청 기능이 제한됩니다.", Toast.LENGTH_LONG).show()
             }
+            // [핵심 수정] 권한 획득 완료 후 다음 단계 (로그인 확인 또는 UI 설정)로 이동
+            handlePostPermissionCheck()
         }
-        setupContent()
+
+        // [핵심 수정] 앱 시작 시 권한 체크를 먼저 시작
+        checkHealthConnectAndRequestPermissions()
+        // setupContent()는 권한 체크 완료 후 handlePostPermissionCheck()에서 호출됨
 
         // onCreate에서 서비스 시작 로직 제거. 권한 확인만 수행.
         // checkHealthConnectAndRequestPermissions()
+    }
+
+    // [새로운 함수] 권한 체크 완료 후 다음 단계를 결정하는 함수
+    private fun handlePostPermissionCheck() {
+        if (isAutoLoggedIn(this)) {
+            // 자동 로그인 성공 시, 서비스 시작 후 메인 페이지로 이동
+            startFallDetectionService()
+            val intent = Intent(this, MainPageActivity::class.java)
+            startActivity(intent)
+            finish()
+        } else {
+            // 자동 로그인 실패 시, 로그인 UI를 설정
+            setupContent()
+        }
     }
 
     // ----------------------------------------------------------------------------------
@@ -137,6 +151,9 @@ class MainActivity : ComponentActivity() {
     private fun startFallDetectionService() {
         // Health Connect Worker 예약 (10분 주기)
         schedulePeriodicSync()
+
+        // 혈압 관련
+        scheduleDailyBloodPressureSync()
 
         // Fall Detection Service 시작 (포그라운드)
         val serviceIntent = Intent(this, FallDetectionService::class.java)
@@ -161,15 +178,52 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun scheduleDailyBloodPressureSync() {
+        val DAILY_BP_WORKER_TAG = "DailyBloodPressureSync"
+        // 목표 시간: 오후 11시 50분
+        val targetHour = 23
+        val targetMinute = 50
+
+        val currentTime = LocalTime.now()
+        val targetTime = LocalTime.of(targetHour, targetMinute)
+
+        // 현재 시간부터 목표 시간까지 남은 시간 계산
+        var delay = Duration.between(currentTime, targetTime)
+        if (delay.isNegative) {
+            // 이미 목표 시간을 지났다면, 다음 날 목표 시간까지의 지연 시간 계산
+            delay = delay.plusDays(1)
+        }
+
+        // 1일 반복
+        val syncRequest = PeriodicWorkRequestBuilder<DailyBloodPressureWorker>(
+            repeatInterval = 1,
+            repeatIntervalTimeUnit = TimeUnit.DAYS
+        )
+            .setInitialDelay(delay.toMinutes(), TimeUnit.MINUTES) // 첫 실행까지의 지연 시간 설정
+            .addTag(DAILY_BP_WORKER_TAG)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            DAILY_BP_WORKER_TAG,
+            ExistingPeriodicWorkPolicy.KEEP, // 이미 스케줄링된 작업이 있다면 기존 작업 유지
+            syncRequest
+        )
+
+        Log.d("WORKER_SCHEDULE", "Daily BP Worker 스케줄링 완료. 초기 지연 시간: ${delay.toHours()}시간 ${delay.toMinutes() % 60}분")
+    }
+
     private fun requestFallDetectionPermissions() {
         // 필수 권한이 모두 있는지 확인
         val hasFineLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val hasSendSms = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
 
+        // FGS_LOCATION 권한은 Manifest에만 있으면 되지만, requestFallPermissionsLauncher가 처리할 수 있도록 배열 사용
+
         val needsRequest = !(hasFineLocation && hasSendSms)
 
         if (!needsRequest) {
-            // 여기서 서비스 시작 로직 제거 (로그인 성공 시 시작)
+            // 모든 권한이 이미 있다면 바로 다음 단계로 이동
+            handlePostPermissionCheck()
         } else {
             requestFallPermissionsLauncher.launch(FALL_DETECTION_PERMISSIONS)
         }
@@ -217,9 +271,12 @@ class MainActivity : ComponentActivity() {
                     LoginObserver(
                         viewModel = viewModel,
                         onLoginSuccess = {
-                            // 로그인 성공 시 권한 확인 및 서비스 시작
-                            checkHealthConnectAndRequestPermissions()
+                            // [수정] LoginObserver는 이제 권한 체크가 끝난 후 호출되므로,
+                            // 서비스 시작 및 페이지 전환 로직만 호출합니다.
                             startFallDetectionService()
+                            val intent = Intent(this, MainPageActivity::class.java)
+                            startActivity(intent)
+                            finish()
                         }
                     )
                 }
@@ -255,23 +312,24 @@ fun LoginObserver(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
     val loginState = viewModel.loginState.collectAsState()
     val context = LocalContext.current
 
+    val prefsManager = remember { SharedPrefsManager(context) }
+
     LaunchedEffect(loginState.value.isLoggedIn) {
         when (val state = loginState.value) {
             is LoginState.Success -> {
-                val name = "김환자"
-                val gender = "남"
-
+                // State에서 받은 실제 값 사용
+                val actualSilverId = state.loginId ?: "UNKNOWN_ID"
+                val name = state.username ?: "환자"
+                val gender = state.gender ?: "정보 없음"
+                val token = state.accessToken ?: ""
                 val autoLoginState = MainActivity.isAutoLoginCheckedState
+
+                // 세션 및 자동 로그인 정보 저장
+                prefsManager.saveUserSession(actualSilverId, name, gender, token)
                 saveLoginInfo(context, name, gender, autoLoginState)
 
                 // 로그인 성공 시 서비스 시작 로직 호출
                 onLoginSuccess()
-
-                val intent = Intent(context, MainPageActivity::class.java)
-                context.startActivity(intent)
-
-                val activity = context as? ComponentActivity
-                activity?.finish()
             }
             is LoginState.Error -> {
                 Toast.makeText(context, "로그인 실패: ${state.errorMessage}", Toast.LENGTH_LONG).show()
@@ -283,7 +341,6 @@ fun LoginObserver(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
 
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewModel()) {
-    // ... (기존 LoginScreen 로직 유지) ...
     val context = LocalContext.current
 
     AndroidView(

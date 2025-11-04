@@ -23,7 +23,6 @@ class MainViewModel : ViewModel() {
                 } else {
                     println("API 요청 실패: ${response.code()}")
                 }
-
             } catch (e: IOException) {
                 println("네트워크 연결 실패: ${e.message}")
             } catch (e: Exception) {

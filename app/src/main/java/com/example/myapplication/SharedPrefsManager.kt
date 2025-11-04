@@ -3,13 +3,32 @@ package com.example.myapplication
 import android.content.Context
 
 class SharedPrefsManager(context: Context) {
-    private val prefs = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
 
-    fun saveUserData(username: String, gender: String) {
-        prefs.edit().putString("username", username).apply()
-        prefs.edit().putString("gender", gender).apply()
+    private val PREFS_FILE_NAME = "user_session"
+    private val KEY_USERNAME = "username"
+    private val KEY_GENDER = "gender"
+    private val KEY_SILVER_ID = "silverId"
+    private val KEY_ACCESS_TOKEN = "accessToken" // 토큰 키 추가
+
+    private val prefs = context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
+
+    fun saveUserSession(silverId: String, username: String, gender: String, accessToken: String) {
+        prefs.edit().apply {
+            putString(KEY_SILVER_ID, silverId)
+            putString(KEY_USERNAME, username)
+            putString(KEY_GENDER, gender)
+            putString(KEY_ACCESS_TOKEN, accessToken) // 토큰 저장
+            apply()
+        }
     }
 
-    fun getUsername(): String = prefs.getString("username", "환자 이름 없음") ?: "환자 이름 없음"
-    fun getGender(): String = prefs.getString("gender", "정보 없음") ?: "정보 없음"
+    fun getUsername(): String = prefs.getString(KEY_USERNAME, "환자 이름 없음") ?: "환자 이름 없음"
+    fun getGender(): String = prefs.getString(KEY_GENDER, "정보 없음") ?: "정보 없음"
+    fun getSilverId(): String? = prefs.getString(KEY_SILVER_ID, null)
+
+    fun getAccessToken(): String? = prefs.getString(KEY_ACCESS_TOKEN, null) // 토큰 조회 메서드
+
+    fun clearAllData() {
+        prefs.edit().clear().apply()
+    }
 }

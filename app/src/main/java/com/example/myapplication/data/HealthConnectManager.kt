@@ -177,6 +177,8 @@ class HealthConnectManager(private val context: Context) {
         return healthConnectClient.readRecords(request).records
     }
 
+
+
     /**
      * [실시간 모니터링용] 지정된 기간 (예: 최근 1분)의 평균 심박수를 반환
      */
@@ -244,25 +246,21 @@ class HealthConnectManager(private val context: Context) {
      * @param systolic 수축기 혈압 (mmHg)
      * @param diastolic 이완기 혈압 (mmHg)
      */
-    suspend fun writeBloodPressure(systolic: Double, diastolic: Double) {
-        try {
-            val time = Instant.now()
-            val bpRecord = BloodPressureRecord(
-                systolic = Pressure.millimetersOfMercury(systolic),
-                diastolic = Pressure.millimetersOfMercury(diastolic),
-                bodyPosition = BloodPressureRecord.BODY_POSITION_SITTING_DOWN,
-                measurementLocation = BloodPressureRecord.MEASUREMENT_LOCATION_LEFT_UPPER_ARM,
-                time = time,
-                zoneOffset = ZonedDateTime.now().offset,
-                metadata = Metadata.manualEntry()
+    suspend fun readBloodPressureRecords(startTime: Instant, endTime: Instant): List<BloodPressureRecord> {
+        return try {
+            val response = healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    BloodPressureRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                )
             )
-            healthConnectClient.insertRecords(listOf(bpRecord))
-            Toast.makeText(context, "혈압 ${systolic}/${diastolic}mmHg 기록 성공", Toast.LENGTH_SHORT).show()
+            response.records
         } catch (e: Exception) {
-            Log.e("HC_WRITE", "혈압 기록 실패: ${e.message}")
-            Toast.makeText(context, "혈압 기록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e("HC_MANAGER", "혈압 기록 읽기 실패", e)
+            emptyList()
         }
     }
+
 
     /**
      * [BodyTemperatureRecord]를 Health Connect에 기록
@@ -285,6 +283,45 @@ class HealthConnectManager(private val context: Context) {
             Log.e("HC_WRITE", "체온 기록 실패: ${e.message}")
             Toast.makeText(context, "체온 기록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // 수면점수 계산
+    suspend fun calculateSleepScoreForPreviousNight(): Int? {
+        // 어제 날짜의 시작 시간 (자정 00:00:00)부터 오늘 아침 12:00까지의 수면 세션 검색
+        val zone = ZoneId.systemDefault()
+        val yesterday = ZonedDateTime.now(zone).minusDays(1).toLocalDate()
+        val startTime = yesterday.atStartOfDay(zone).toInstant()
+        val endTime = yesterday.atTime(12, 0).atZone(zone).toInstant() // 정오까지
+
+        val sleepSessions = readSleepSessions(startTime, endTime) // 기존 readSleepSessions 사용
+
+        if (sleepSessions.isEmpty()) {
+            return null // 수면 기록 없음
+        }
+
+        var totalDeepMinutes = 0L
+        var totalSleepDuration = 0L
+
+        for (session in sleepSessions) {
+            // 총 수면 시간 계산
+            totalSleepDuration += Duration.between(session.startTime, session.endTime).toMinutes()
+
+            // 깊은 수면 시간 계산
+            for (stage in session.stages) {
+                if (stage.stage == SleepSessionRecord.STAGE_TYPE_DEEP) {
+                    totalDeepMinutes += Duration.between(stage.startTime, stage.endTime).toMinutes()
+                }
+            }
+        }
+
+        if (totalSleepDuration == 0L) return null
+
+        // 점수 계산: (총 수면 시간 + 깊은 수면 시간 * 2) / 목표 수면 시간 (480분=8시간)을 기준으로 환산
+        val targetSleepMinutes = 480
+        val score = (totalSleepDuration + totalDeepMinutes * 0.5).toDouble() / targetSleepMinutes * 100
+
+        // 점수는 0~100 사이, 최대 100으로 제한
+        return minOf(score.toInt(), 100)
     }
 
     // --- 유틸리티 함수 ---
