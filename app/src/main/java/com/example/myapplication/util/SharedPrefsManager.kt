@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.util
 
 import android.content.Context
 
@@ -20,6 +20,22 @@ class SharedPrefsManager(context: Context) {
             putString(KEY_ACCESS_TOKEN, accessToken) // 토큰 저장
             apply()
         }
+    }
+
+    fun saveString(key: String, value: String?) {
+        prefs.edit().apply {
+            if (value.isNullOrEmpty()) {
+                remove(key)
+            } else {
+                putString(key, value)
+            }
+            apply()
+        }
+    }
+
+    fun getStoredString(key: String): String? {
+        // KEY_PROFILE_IMAGE_URL 조회 시 사용됨
+        return prefs.getString(key, null)
     }
 
     fun getUsername(): String = prefs.getString(KEY_USERNAME, "환자 이름 없음") ?: "환자 이름 없음"

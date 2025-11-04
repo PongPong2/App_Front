@@ -5,10 +5,10 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.myapplication.data.HealthConnectManager
-import com.example.myapplication.RetrofitClient
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.units.Pressure
-import com.example.myapplication.SharedPrefsManager
+import com.example.myapplication.api.RetrofitClient
+import com.example.myapplication.util.SharedPrefsManager
 import com.example.myapplication.domain.DailyHealthLogRequest
 import java.time.Instant
 import java.time.ZoneId

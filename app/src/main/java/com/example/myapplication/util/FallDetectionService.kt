@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.util
 
 import android.Manifest
 import android.app.Activity
@@ -25,6 +25,8 @@ import android.telephony.SmsManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.example.myapplication.BuildConfig
+import com.example.myapplication.R
 import com.example.myapplication.data.HealthConnectManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -66,7 +68,7 @@ class FallDetectionService : Service(), SensorEventListener {
     private val CHANNEL_ID_ALERT = "FallAlertChannel"
     private val NOTIFICATION_ID_ALERT = 2
 
-    // 💡 수정된 임계치: 민감도 조정
+    // 수정된 임계치: 민감도 조정
     private val IMPACT_THRESHOLD = 35.0f // 초기 충격 임계값 상향 (20.0f -> 35.0f)
     private val STILLNESS_THRESHOLD = 11.0f
     private val STILLNESS_TIME_MS = 2000L // 정지 확인 시간 연장 (1500L -> 2000L, 2초)
@@ -108,9 +110,7 @@ class FallDetectionService : Service(), SensorEventListener {
     }
 
 
-    // =================================================================
     //  Service Lifecycle
-    // =================================================================
 
     override fun onCreate() {
         super.onCreate()
@@ -121,7 +121,7 @@ class FallDetectionService : Service(), SensorEventListener {
 
         handler = Handler(Looper.getMainLooper())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
         // SMS 리시버 등록
@@ -271,7 +271,7 @@ class FallDetectionService : Service(), SensorEventListener {
         fallConfirmed = false
         fallStartTime = 0
         handler.removeCallbacks(fallAlertRunnable)
-        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(NOTIFICATION_ID_ALERT)
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).cancel(NOTIFICATION_ID_ALERT)
         Log.d(TAG, "Fall detection state reset.")
     }
 
@@ -427,6 +427,6 @@ class FallDetectionService : Service(), SensorEventListener {
             .setTimeoutAfter(FALL_CONFIRMATION_DELAY_MS)
             .build()
 
-        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIFICATION_ID_ALERT, notification)
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIFICATION_ID_ALERT, notification)
     }
 }

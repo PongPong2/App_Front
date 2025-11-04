@@ -1,6 +1,4 @@
-package com.example.myapplication.data.request
-
-import java.util.Date
+package com.example.myapplication.data_model
 
 data class UserRegistrationRequest(
     val loginId: String,

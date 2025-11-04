@@ -1,7 +1,11 @@
-package com.example.myapplication
+package com.example.myapplication.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.api.RetrofitClient
+import com.example.myapplication.data_model.LoginRequest
+import com.example.myapplication.data_state.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,19 +17,21 @@ class LoginViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
-    private val authService = RetrofitClient.authService
+    private val apiService = RetrofitClient.apiService
 
-    fun login(loginId: String, password: String) {
+    fun login(loginId: String, password: String, gender: String = "") {
         _loginState.value = LoginState.Loading
 
         viewModelScope.launch {
             try {
                 val request = LoginRequest(loginId, password)
-                val response = authService.login(request)
+                val response = apiService.login(request)
+                Log.d("LoginViewModel", "Response: $response")
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    _loginState.value = LoginState.Success(body?.accessToken, body?.name, body?.loginId, body?.gender)
+                    // Success 상태에 body 객체 전체를 전달
+                    _loginState.value = LoginState.Success(body)
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "인증 실패"
                     _loginState.value = LoginState.Error(errorMsg)

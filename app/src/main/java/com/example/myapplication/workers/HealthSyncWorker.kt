@@ -7,8 +7,8 @@ import androidx.work.WorkerParameters
 import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.data.HealthDataStore
 import androidx.health.connect.client.records.SleepSessionRecord
-import com.example.myapplication.RetrofitClient
-import com.example.myapplication.SharedPrefsManager
+import com.example.myapplication.api.RetrofitClient
+import com.example.myapplication.util.SharedPrefsManager
 import com.example.myapplication.domain.HealthRequest
 import java.time.*
 import java.time.temporal.ChronoUnit

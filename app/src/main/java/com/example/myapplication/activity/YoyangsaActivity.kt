@@ -1,8 +1,9 @@
-package com.example.myapplication
+package com.example.myapplication.activity
 
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.R
 
 class YoyangsaActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
