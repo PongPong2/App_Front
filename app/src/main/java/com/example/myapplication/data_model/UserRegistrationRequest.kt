@@ -1,23 +1,25 @@
 package com.example.myapplication.data_model
 
 import com.google.gson.annotations.SerializedName
+import java.time.LocalDate
+import java.util.Date
 
 data class UserRegistrationRequest(
-    @SerializedName("loginId") // 서버의 #{loginId}와 매칭
+    @SerializedName("loginId")
     val loginId: String,
 
-    @SerializedName("password") // 서버의 #{password}와 매칭
+    @SerializedName("password")
     val password: String,
 
-    @SerializedName("name") // 서버의 #{name}과 매칭되도록 "username"에서 "name"으로 변경
-    val username: String,
+    @SerializedName("name")
+    val name: String,
 
-    @SerializedName("birthday") // 서버의 #{birthdate}와 매칭되도록 "birth"에서 "birthdate"로 변경
+    @SerializedName("birthday")
     val birthday: String,
 
-    @SerializedName("gender") // 서버의 #{gender}와 매칭
-    val gender: String,
+    @SerializedName("gender")
+    val gender: Char,
 
-    @SerializedName("caregiverId") // 서버의 #{caregiverId}와 매칭
+    @SerializedName("caregiverId")
     val caregiverId: Long?
 )

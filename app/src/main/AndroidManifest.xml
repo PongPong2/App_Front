@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -70,36 +71,35 @@
 
         <activity
             android:name=".activity.LoginActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".activity.SignUpActivity"
-            android:theme="@style/Theme.AppBase.NoActionBar"/>
-
-        <activity
-            android:name=".activity.BohojaActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppBase.NoActionBar" />
+            android:exported="false" /> <activity
+        android:name=".activity.SignUpActivity"
+        android:windowSoftInputMode="adjustPan"
+        android:exported="false" /> <activity
+        android:name=".activity.BohojaActivity"
+        android:exported="false"
+        android:theme="@style/Theme.AppBase.NoActionBar" />
 
         <activity
             android:name=".activity.MainPageActivity"
             android:theme="@style/Theme.AppBase"
-            android:windowSoftInputMode="adjustResize" />
-
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false" />
         <activity
-            android:name=".activity.YoyangsaActivity"
-            android:theme="@style/Theme.AppBase"/>
+        android:name=".activity.YoyangsaActivity"
+        android:theme="@style/Theme.AppBase"
+        android:exported="false" />
 
         <activity-alias
-            android:name=".ViewPermissionUsageActivity"
-            android:exported="true"
-            android:targetActivity=".activity.MainActivity"
-            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
-                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
-            </intent-filter>
-        </activity-alias>
+        android:name=".ViewPermissionUsageActivity"
+        android:exported="true"
+        android:targetActivity=".activity.MainActivity"
+        android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+            <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+        </intent-filter>
+    </activity-alias>
 
         <service
             android:name="androidx.work.impl.background.systemjob.SystemJobService"

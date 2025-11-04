@@ -1,6 +1,7 @@
 package com.example.myapplication.activity
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -46,15 +47,19 @@ import java.util.concurrent.TimeUnit
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.FallDetectionService
 import com.example.myapplication.KEY_AUTO_LOGIN
-import com.example.myapplication.KEY_GENDER
 import com.example.myapplication.KEY_NAME
-import com.example.myapplication.activity.MainPageActivity
 import com.example.myapplication.PREFS_NAME
+import com.example.myapplication.KEY_PROFILE_IMAGE_URL
 import com.example.myapplication.R
-import com.example.myapplication.activity.SignUpActivity
 import com.example.myapplication.data_state.LoginState
 import com.example.myapplication.viewmodel.LoginViewModel
-import com.example.myapplication.util.BirthDateTextWatcher
+import com.example.myapplication.util.BirthDayTextWatcher
+import coil.load
+
+// 💡 [추가] SharedPreferences 키 정의 (메인 페이지 정보 표시에 사용)
+const val KEY_GENDER = "user_gender"
+const val KEY_BIRTHDAY = "user_birthday"
+// KEY_PROFILE_IMAGE_URL, KEY_NAME 등은 이미 import 되어 있습니다.
 
 
 class MainActivity : ComponentActivity() {
@@ -106,6 +111,7 @@ class MainActivity : ComponentActivity() {
         Manifest.permission.POST_NOTIFICATIONS
     )
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
@@ -121,6 +127,7 @@ class MainActivity : ComponentActivity() {
 
         healthConnectManager = HealthConnectManager(this)
 
+        // ... (권한 요청 런처 및 체크 로직 생략)
         requestPermissionLauncher = registerForActivityResult(
             healthConnectManager.requestPermissionsActivityContract()
         ) { granted ->
@@ -236,17 +243,6 @@ fun isAutoLoggedIn(context: Context): Boolean {
     return isChecked && userNameSaved != null
 }
 
-fun saveLoginInfo(context: Context, name: String, gender: String, autoLogin: Boolean) {
-    val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-    with(sharedPreferences.edit()) {
-        putString(KEY_NAME, name)
-        putString(KEY_GENDER, gender)
-        putBoolean(KEY_AUTO_LOGIN, autoLogin)
-        apply()
-    }
-}
-
 @Composable
 fun LoginObserver(viewModel: LoginViewModel) {
     val loginState = viewModel.loginState.collectAsState()
@@ -255,13 +251,44 @@ fun LoginObserver(viewModel: LoginViewModel) {
     LaunchedEffect(loginState.value.isLoggedIn) {
         when (val state = loginState.value) {
             is LoginState.Success -> {
+                val response = state.loginResponse
 
-                val intent = Intent(context, MainPageActivity::class.java)
+                if (response != null) {
+                    try {
+                        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                        with(sharedPreferences.edit()) {
+                            putBoolean(KEY_AUTO_LOGIN, MainActivity.isAutoLoginCheckedState)
+                            putString(KEY_NAME, response.name)
+                            putString(KEY_GENDER, response.gender?.toString())
+                            putString(KEY_BIRTHDAY, response.birthday?.toString())
 
-                context.startActivity(intent)
+                            val profileImageUrl = response.images?.firstOrNull()
+                            putString(KEY_PROFILE_IMAGE_URL, profileImageUrl)
 
-                val activity = context as? ComponentActivity
-                activity?.finish()
+                            apply() // 👈 로그인 정보 저장 완료
+                        }
+
+                        // 🚀 [화면 전환] 메인 페이지로 이동 시 스택 정리 플래그 사용
+                        val intent = Intent(context, MainPageActivity::class.java)
+                        // 💡 [핵심 수정] 새로운 태스크로 시작하고 기존 스택(MainActivity 포함)을 모두 클리어합니다.
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        Log.d("NAV_SUCCESS", "Starting MainPageActivity after successful login.")
+                        context.startActivity(intent)
+
+                        // 🚨 [필요없음] FLAG_ACTIVITY_CLEAR_TASK 사용 시 finish()는 불필요하지만,
+                        // 안전을 위해 context가 Activity인 경우 호출하는 것은 무방합니다.
+                        // 이 경우, `finish()` 대신 `FLAG_ACTIVITY_CLEAR_TASK`가 스택 정리를 보장합니다.
+                        // val activity = context as? ComponentActivity
+                        // activity?.finish()
+
+                    } catch (e: Exception) {
+                        Log.e("FATAL_NAV_ERROR", "화면 전환 실패 (저장 오류): ${e.message}", e)
+                        Toast.makeText(context, "로그인 성공했으나 화면 전환 실패: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Log.e("FATAL_NAV_ERROR", "Login successful but response body is null.")
+                    Toast.makeText(context, "로그인 성공했으나 응답 데이터가 없습니다.", Toast.LENGTH_LONG).show()
+                }
             }
             is LoginState.Error -> {
                 Toast.makeText(context, "로그인 실패: ${state.errorMessage}", Toast.LENGTH_LONG).show()
@@ -271,6 +298,7 @@ fun LoginObserver(viewModel: LoginViewModel) {
     }
 }
 
+@SuppressLint("MissingInflatedId")
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewModel()) {
     val context = LocalContext.current
@@ -278,14 +306,13 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
     AndroidView(modifier = modifier.fillMaxSize(),
         factory = {
             val view = LayoutInflater.from(it).inflate(R.layout.login, null, false)
-            // factory 상단에서 모든 뷰를 한 번만 찾습니다.
             val loginIdInput = view.findViewById<TextInputEditText>(R.id.input_id)
             val passwordInput = view.findViewById<TextInputEditText>(R.id.input_password)
-            val birthDateInput = view.findViewById<TextInputEditText>(R.id.input_birth_date)
+            val birthdayInput = view.findViewById<TextInputEditText>(R.id.birthdayInput)
             val autoLoginCheckBox = view.findViewById<CheckBox>(R.id.check_auto_login)
             val loginButton = view.findViewById<MaterialButton>(R.id.btn_login)
             val signUpButton = view.findViewById<MaterialButton>(R.id.btn_signup)
-            birthDateInput?.addTextChangedListener(BirthDateTextWatcher(birthDateInput))
+            birthdayInput?.addTextChangedListener(BirthDayTextWatcher(birthdayInput))
 
             // 회원가입 버튼 리스너
             signUpButton?.setOnClickListener {
@@ -310,7 +337,6 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
             view
         },
         update = {
-            // factory에서 모든 리스너가 설정되었으므로, update 블록은 비워둡니다.
         }
     )
 }

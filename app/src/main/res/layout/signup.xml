@@ -25,6 +25,7 @@
             android:src="@drawable/title_logo" />
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_profile_image"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginBottom="24dp"
@@ -34,6 +35,7 @@
             app:strokeWidth="1dp">
 
             <ImageView
+                android:id="@+id/img_profile"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
@@ -119,12 +121,12 @@
             >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_birth_date"
+                android:id="@+id/birthdayInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pretendardvariable"
                 android:hint="생년월일을 입력해주세요. (YYYY-MM-DD)"
-                android:inputType="phone"
+                android:inputType="number"
                 android:maxLength="10"
                 android:singleLine="true"
                 android:textStyle="bold" />

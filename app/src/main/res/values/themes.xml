@@ -5,7 +5,7 @@
     </style>
 
     <style name="Theme.AppBase.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-
+        <item name="android:fitsSystemWindows">true</item>
     </style>
 
     <style name="Theme.AppSplash" parent="Theme.SplashScreen">
