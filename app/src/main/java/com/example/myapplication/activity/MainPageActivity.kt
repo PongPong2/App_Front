@@ -2,18 +2,34 @@ package com.example.myapplication.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.myapplication.PREFS_NAME
+import com.example.myapplication.api.RetrofitClient
 import com.example.myapplication.R
+import com.example.myapplication.util.SharedPrefsManager
+import com.example.myapplication.activity.YoyangsaActivity
+import com.example.myapplication.activity.BohojaActivity
+import com.example.myapplication.domain.DailyHealthLogRequest // DTO 경로 확인
 import com.example.myapplication.databinding.MainBinding
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import coil.load
+import com.example.myapplication.util.KEY_PROFILE_IMAGE_URL
+import com.example.myapplication.util.PREFS_NAME
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
-private val MainPageActivity.KEY_PROFILE_IMAGE_URL: String
-    get() = "user_profile_image_url"
+// SharedPreferences 키는 MainPaageActivity 외부의 상수로 정의되어 있다고 가정합니다.
 
 class MainPageActivity : AppCompatActivity() {
 
+
+    private lateinit var prefsManager: SharedPrefsManager
     private lateinit var binding: MainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,53 +38,132 @@ class MainPageActivity : AppCompatActivity() {
         binding = MainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 💡 프로필 이미지 로딩 시작 (URL이 있으면 로드, 없으면 기본 이미지)
+        prefsManager = SharedPrefsManager(this)
+
+        // 사용자 정보 표시
+        val username = prefsManager.getUsername()
+        val gender = prefsManager.getGender()
+
+        // XML ID에 맞춰 binding 사용
+        binding.mAName.text = username
+        binding.mAGender.text = gender
+
+        Log.d("MPA", "MainPage loaded. User: $username, Gender: $gender")
+
+        // 프로필 이미지 로드
         displayProfileImage()
 
-        // 💡 '요양사 정보' 버튼 리스너
+        // 버튼 리스너 설정
         binding.MShowAInfo.setOnClickListener {
             val intent = Intent(this, YoyangsaActivity::class.java)
             startActivity(intent)
         }
 
-        // 💡 '보호자 정보' 버튼 리스너
         binding.MShowPInfo.setOnClickListener {
             val intent = Intent(this, BohojaActivity::class.java)
             startActivity(intent)
         }
 
-        // 💡 'SOS' 버튼 리스너
         binding.MSOS.setOnClickListener {
             Toast.makeText(this, "긴급 SOS 호출!", Toast.LENGTH_SHORT).show()
         }
 
-        // 💡 로그아웃 버튼 리스너
+        // 최종 확정된 로그아웃 버튼 ID 사용
         binding.loginOut.setOnClickListener {
+            // MainActivity의 정적 startLogout 메서드를 사용한다고 가정
             MainActivity.startLogout(this)
+        }
+
+        // 수동 입력 버튼 리스너
+        binding.MInputSubmit.setOnClickListener {
+            // M_Input_Sugar (혈당), M_Input_BodyTemp (체온)
+            handleManualInput(binding.MInputSugar, binding.MInputBodyTemp)
         }
     }
 
-    // --- 프로필 이미지 로딩 로직 ---
+    // 수동 입력 및 서버 통신 로직
 
-    // 💡 SharedPreferences에서 저장된 이미지 URL을 가져오는 함수
-    private fun loadProfileImageUrl(): String? {
-        val sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        return sharedPreferences.getString(KEY_PROFILE_IMAGE_URL, null)
+    private fun handleManualInput(inputBloodSugar: TextInputEditText, inputBodyTemp: TextInputEditText) {
+        // 파라미터 이름을 역할에 맞게 변경 (M_Input_Sugar는 이제 혈당을 의미함)
+
+        val silverId = prefsManager.getSilverId()
+        if (silverId.isNullOrEmpty()) {
+            Toast.makeText(this, "로그인 정보 오류: 사용자 ID를 찾을 수 없습니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // M_Input_Sugar (XML에서 혈당) 값을 bloodSugar로 파싱합니다.
+        val bloodSugar = inputBloodSugar.text?.toString()?.toIntOrNull()
+        val bodyTemperature = inputBodyTemp.text?.toString()?.toDoubleOrNull()
+
+        if (bloodSugar == null && bodyTemperature == null) {
+            Toast.makeText(this, "혈당 또는 체온 값을 최소 하나 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val now = LocalDateTime.now(ZoneId.systemDefault())
+        val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+        // DTO 필드에 맞게 정확한 데이터를 전송합니다.
+        val request = DailyHealthLogRequest(
+            silverId = silverId,
+            bloodSugar = bloodSugar, // 혈당 값 전송
+            bodyTemperature = bodyTemperature,
+            logDate = now.format(dateFormatter)
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // RetrofitClient.healthService의 upsertDailyHealthLog 메서드 호출 가정
+                val response = RetrofitClient.healthService.sendDailyHealthLog(request)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+
+                        if (apiResponse != null && apiResponse.result == "success") {
+                            Toast.makeText(this@MainPageActivity, "건강 데이터 입력 성공!", Toast.LENGTH_SHORT).show()
+                            inputBloodSugar.text?.clear()
+                            inputBodyTemp.text?.clear()
+                        } else {
+                            val errorMessage = apiResponse?.message ?: "응답 본문에 메시지 없음"
+                            Toast.makeText(this@MainPageActivity, "입력 실패: $errorMessage", Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        Log.e("MANUAL_INPUT", "수동 입력 API 실패, HTTP Code: ${response.code()}")
+                        Toast.makeText(this@MainPageActivity, "서버 전송 실패: ${response.code()}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MANUAL_INPUT", "수동 입력 API 호출 실패", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainPageActivity, "네트워크 오류 발생.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
-    // 💡 Coil 라이브러리를 사용해 ImageView에 이미지를 로드하고 처리하는 함수
+    // 이미지 로딩 로직
+
+    private fun loadProfileImageUrl(): String? {
+        val urlFragment = prefsManager.getStoredString(KEY_PROFILE_IMAGE_URL)
+
+        if (urlFragment.isNullOrEmpty()) return null
+
+        return RetrofitClient.BASE_URL + urlFragment
+    }
+
     private fun displayProfileImage() {
         val imageUrl = loadProfileImageUrl()
 
+        Log.d("ProfileImageCheck", "Final Combined Image URL: $imageUrl")
+        // XML에서 silver_image ID 사용
         imageUrl?.let {
-            // 💡 Coil의 load 함수를 사용해 URL 이미지 로드
             binding.silverImage.load(it) {
-                error(R.drawable.noin)  // 로딩 실패 시 기본 이미지
-                placeholder(R.drawable.noin) // 로딩 중 표시할 이미지
-                // transform(CircleCropTransformation())
+                error(R.drawable.noin)
+                placeholder(R.drawable.noin)
             }
         } ?: run {
-            // 💡 URL이 없을 경우, 기본 리소스 이미지 설정
             binding.silverImage.setImageResource(R.drawable.noin)
         }
     }

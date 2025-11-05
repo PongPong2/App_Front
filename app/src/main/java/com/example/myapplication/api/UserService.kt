@@ -1,4 +1,4 @@
-package com.example.myapplication.API
+package com.example.myapplication.api
 
 import com.example.myapplication.data_model.LoginResponse
 import com.example.myapplication.data_model.UserRegistrationRequest
@@ -12,7 +12,7 @@ import retrofit2.http.Part
 
 interface UserService {
     @Multipart
-    @POST("api/signup")
+    @POST("/api/signup")
     suspend fun registerUser(
         @Part parts: List<MultipartBody.Part>
     ): Response<LoginResponse>

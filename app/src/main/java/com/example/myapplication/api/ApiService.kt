@@ -1,9 +1,7 @@
-package com.example.myapplication.API
+package com.example.myapplication.api
 
 import com.example.myapplication.data_model.LoginRequest
 import com.example.myapplication.data_model.LoginResponse
-import com.example.myapplication.data_model.User
-import com.example.myapplication.data_model.UserRegistrationRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response

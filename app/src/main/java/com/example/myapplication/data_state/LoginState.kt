@@ -4,11 +4,12 @@ import com.example.myapplication.data_model.LoginResponse
 
 sealed interface LoginState {
 
-    // 💡 모든 상태가 LoginResponse 객체 또는 null을 가질 수 있음을 선언
+    // LoginResponse 객체 또는 null을 가질 수 있음을 선언
     val loginResponse: LoginResponse?
 
-    // 💡 UI 상태 변화 감지를 위한 플래그
+    // UI 상태 변화 감지를 위한 플래그
     val isLoggedIn: Boolean
+        get() = this is Success
 
     data object Idle : LoginState {
         override val loginResponse: LoginResponse? = null

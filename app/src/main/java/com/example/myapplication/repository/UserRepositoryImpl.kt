@@ -2,7 +2,7 @@ package com.example.myapplication.repository
 
 import android.content.Context
 import android.net.Uri
-import com.example.myapplication.API.UserService
+import com.example.myapplication.api.UserService
 import com.example.myapplication.data_model.LoginResponse
 import com.example.myapplication.data_model.UserRegistrationRequest
 import com.google.gson.Gson

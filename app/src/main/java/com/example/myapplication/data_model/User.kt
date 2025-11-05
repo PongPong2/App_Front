@@ -1,10 +1,9 @@
 package com.example.myapplication.data_model
 
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 //* [DB 조회용 DTO]
-//* DB에서 데이터를 읽어올 때 사용됩니다.
+//* DB에서 데이터를 읽어올 때 사용
 data class User(
     val id: Int,
 

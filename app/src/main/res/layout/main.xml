@@ -205,7 +205,7 @@
                             android:fontFamily="@font/pretendardvariable"
                             android:gravity="center"
                             android:layout_marginBottom="20dp"
-                            android:text="매일 체중, 체온을 입력해주세요."
+                            android:text="매일 혈당, 체온을 입력해주세요."
                             android:textColor="@android:color/black"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -248,7 +248,7 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:fontFamily="@font/pretendardvariable"
-                                            android:text="체중"
+                                            android:text="혈당"
                                             android:textColor="@android:color/black"
                                             android:textSize="18sp"
                                             android:textStyle="bold" />
@@ -258,7 +258,7 @@
                                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="체중 입력(kg)"
+                                        android:hint="혈당 입력(mg/dL)"
                                         app:boxBackgroundColor="#F7F8FA"
                                         app:boxCornerRadiusBottomEnd="8dp"
                                         app:boxCornerRadiusBottomStart="8dp"
@@ -266,7 +266,7 @@
                                         app:boxCornerRadiusTopStart="8dp"
                                         app:boxStrokeWidth="0dp"
                                         app:boxStrokeWidthFocused="0dp"
-                                        app:suffixText="kg">
+                                        app:suffixText="mg/dL">
 
                                         <com.google.android.material.textfield.TextInputEditText
                                             android:id="@+id/M_Input_Sugar"
@@ -364,7 +364,7 @@
                             android:paddingEnd="16dp">
 
                             <androidx.appcompat.widget.AppCompatButton
-                                android:id="@+id/btn4"
+                                android:id="@+id/M_Input_Submit"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"

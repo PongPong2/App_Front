@@ -1,4 +1,3 @@
-// 📁 repository/UserRepository.kt 파일 생성 (또는 해당 경로 확인)
 package com.example.myapplication.repository
 
 import android.net.Uri

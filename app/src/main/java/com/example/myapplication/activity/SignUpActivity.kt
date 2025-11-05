@@ -1,12 +1,16 @@
 package com.example.myapplication.activity
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.Application
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.util.Calendar
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,28 +20,25 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.myapplication.API.RetrofitClient
-import com.example.myapplication.API.UserService
+import com.example.myapplication.api.RetrofitClient
+import com.example.myapplication.api.UserService
 import com.example.myapplication.data_model.UserRegistrationRequest
 import com.example.myapplication.data_state.RegistrationState
 import com.example.myapplication.databinding.SignupBinding
-import com.example.myapplication.util.BirthDayTextWatcher
+import com.example.myapplication.util.BirthDayTextWatcher // 💡 Import
 import com.example.myapplication.viewmodel.SignUpViewModel
-import com.example.myapplication.repository.UserRepositoryImpl
-import com.google.gson.Gson
+import com.example.myapplication.repository.UserRepositoryImpl // 💡 Import
+import com.google.gson.Gson // 💡 Import
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
-import androidx.appcompat.app.AlertDialog
-// java.time.ZoneId, java.util.Date 는 더 이상 필요 없으나, import는 그대로 유지했습니다.
-import java.time.ZoneId
-import java.util.Date
+import java.time.format.DateTimeParseException // 💡 Import
+import java.util.Locale
 
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: SignupBinding
-    // 💡 선택된 이미지 목록 (List<Uri>)
     private var selectedImageUris = listOf<Uri>()
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
@@ -45,7 +46,7 @@ class SignUpActivity : AppCompatActivity() {
 
     // 💡 ViewModel 초기화: 커스텀 Factory를 사용하여 의존성 주입
     private val viewModel: SignUpViewModel by viewModels {
-        SignUpViewModelFactory(application, RetrofitClient.userService) // RetrofitClient.userService를 팩토리에 직접 전달
+        SignUpViewModelFactory(application, RetrofitClient.userService)
     }
 
 
@@ -55,12 +56,14 @@ class SignUpActivity : AppCompatActivity() {
         binding = SignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initActivityResultLaunchers()
+        initActivityResultLaunchers() // 이미지 런처 초기화
 
+        // 💡 ViewBinding 사용
         binding.birthdayInput.addTextChangedListener(BirthDayTextWatcher(binding.birthdayInput))
+        setupBirthdayField() // DatePickerDialog 설정
 
         binding.cardProfileImage.setOnClickListener {
-            checkPermissionAndOpenGallery()
+            checkPermissionAndOpenGallery() // 이미지 선택 플로우 시작
         }
 
         binding.btnSignup.setOnClickListener {
@@ -74,24 +77,51 @@ class SignUpActivity : AppCompatActivity() {
         observeRegistrationState()
     }
 
+    private fun setupBirthdayField() {
+        // 💡 [수정] ViewBinding 사용
+        val inputBirthday = binding.birthdayInput
+        val calendar = Calendar.getInstance()
+
+        inputBirthday.setOnClickListener {
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            val datePickerDialog = DatePickerDialog(
+                this,
+                { _, selectedYear, selectedMonth, selectedDay ->
+                    val selectedDate = Calendar.getInstance().apply {
+                        set(selectedYear, selectedMonth, selectedDay)
+                    }.time
+
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val formattedDate = dateFormat.format(selectedDate)
+
+                    inputBirthday.setText(formattedDate)
+                },
+                year,
+                month,
+                day
+            )
+            datePickerDialog.show()
+        }
+    }
+
     private fun initActivityResultLaunchers() {
         galleryLauncher = registerForActivityResult(
             ActivityResultContracts.GetMultipleContents()
         ) { uris: List<Uri>? ->
             uris?.let {
-                // 💡 [선택된 이미지 처리] 이미지가 있다면 첫 번째 이미지를 프로필로 표시
                 if (it.isNotEmpty()) {
                     selectedImageUris = it
-                    binding.imgProfile.setImageURI(it[0])
+                    binding.imgProfile.setImageURI(it[0]) // 첫 번째 이미지를 프로필로 표시
                     Toast.makeText(this, "이미지 ${uris.size}장이 선택되었습니다.", Toast.LENGTH_SHORT).show()
                 } else {
-                    // 💡 선택 취소 시 리스트를 비움 (이미지 미선택 허용)
                     selectedImageUris = emptyList()
                 }
             }
         }
 
-        // 💡 런타임 권한 요청 결과 처리
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
@@ -104,7 +134,6 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun checkPermissionAndOpenGallery() {
-        // 💡 OS 버전에 따라 적절한 미디어 권한을 사용
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
@@ -114,7 +143,6 @@ class SignUpActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
             openGallery()
         }
-        // 💡 권한 거부 시, 필요한 이유를 설명하는 다이얼로그 표시
         else if (shouldShowRequestPermissionRationale(permission)) {
             showRationaleDialog(permission)
         } else {
@@ -137,41 +165,32 @@ class SignUpActivity : AppCompatActivity() {
         galleryLauncher.launch("image/*")
     }
 
-
     private fun attemptRegistration() {
         val name = binding.inputName.text.toString().trim()
         val loginId = binding.inputId.text.toString().trim()
         val password = binding.inputPassword.text.toString().trim()
         val passwordConfirm = binding.inputPasswordConfirm.text.toString().trim()
 
-        // 💡 텍스트 입력 필드의 내용을 올바르게 가져옵니다.
+        // [수정] ViewBinding 사용 (birthdayInput)
         val birthdayStr = binding.birthdayInput.text.toString().trim()
 
-        // Char 타입으로 변환
-        val gender: Char? = when (binding.radioGroupGender.checkedRadioButtonId) {
-            binding.radioMale.id -> 'M'
-            binding.radioFemale.id -> 'F'
+        // 💡 [수정] 성별 타입을 Char 대신 String?으로 변경
+        val gender: String? = when (binding.radioGroupGender.checkedRadioButtonId) {
+            binding.radioMale.id -> "M"
+            binding.radioFemale.id -> "F"
             else -> null
         }
 
+        // 1. 유효성 검사
         if (name.isEmpty() || loginId.isEmpty() || password.isEmpty() || passwordConfirm.isEmpty() || birthdayStr.isEmpty()) {
             Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 💡 [수정] localDateBirthday 변수 선언은 유효성 검사 목적으로만 사용합니다.
-        try {
-            // "YYYY-MM-DD" 형식이 올바른지 확인
-            LocalDate.parse(birthdayStr, DateTimeFormatter.ISO_LOCAL_DATE)
-        } catch (e: DateTimeParseException) {
-            Toast.makeText(this, "생년월일 형식이 올바르지 않습니다. (YYYY-MM-DD)", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // 💡 [제거] java.util.Date로 변환하는 불필요한 로직이 제거되었습니다.
-
         if (password != passwordConfirm) {
             Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+            binding.inputPassword.text?.clear()
+            binding.inputPasswordConfirm.text?.clear()
             return
         }
 
@@ -180,16 +199,22 @@ class SignUpActivity : AppCompatActivity() {
             return
         }
 
-        // 💡 [안전성 확보] 선택된 이미지 리스트에서 첫 번째 URI를 안전하게 추출 (null 허용)
-        val profileUri: Uri? = selectedImageUris.firstOrNull()
+        // 2. 생년월일 형식 검사
+        try {
+            LocalDate.parse(birthdayStr, DateTimeFormatter.ISO_LOCAL_DATE)
+        } catch (e: DateTimeParseException) {
+            Toast.makeText(this, "생년월일 형식이 올바르지 않습니다. (YYYY-MM-DD)", Toast.LENGTH_SHORT).show()
+            return
+        }
 
+        // 3. 요청 객체 생성 및 ViewModel 호출
+        val profileUri: Uri? = selectedImageUris.firstOrNull()
 
         val request = UserRegistrationRequest(
             loginId = loginId,
             password = password,
             name = name,
             gender = gender,
-            // 💡 [수정] String 타입인 DTO 필드에 검증된 문자열을 직접 전달합니다.
             birthday = birthdayStr,
             caregiverId = null
         )
@@ -208,12 +233,10 @@ class SignUpActivity : AppCompatActivity() {
                     is RegistrationState.Success -> {
                         Toast.makeText(this@SignUpActivity, "회원가입 성공! 로그인 화면으로 이동합니다.", Toast.LENGTH_LONG).show()
 
-                        // 💡 회원가입 성공 후 로그인 화면으로 이동
                         val intent = Intent(this@SignUpActivity, LoginActivity::class.java)
-                        // 현재 Activity를 스택에서 제거하고 새 Activity 시작
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                         startActivity(intent)
-                        finish()
+                        finish() // 현재 Activity를 종료하고 스택에서 제거
                     }
                     is RegistrationState.Error -> {
                         Toast.makeText(this@SignUpActivity, state.message, Toast.LENGTH_LONG).show()
@@ -230,12 +253,11 @@ class SignUpActivity : AppCompatActivity() {
     }
 }
 
-// -----------------------------------------------------------------------------
-// ## ⚙️ ViewModel Factory
-// -----------------------------------------------------------------------------
+// ## ⚙ViewModel Factory
 
 /**
  * SignUpViewModel에 필요한 의존성(UserRepository, Application)을 수동으로 주입하기 위한 팩토리입니다.
+ * 이 팩토리는 SignUpActivity 내부에 위치해도 되지만, 별도 파일에 위치하는 것이 일반적입니다.
  */
 class SignUpViewModelFactory(
     private val application: Application,

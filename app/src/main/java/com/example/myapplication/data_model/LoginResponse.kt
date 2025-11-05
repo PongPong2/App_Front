@@ -1,18 +1,27 @@
 package com.example.myapplication.data_model
 
-import androidx.health.connect.client.records.ExerciseRouteResult
 import com.google.gson.annotations.SerializedName
-import java.time.LocalDate
-import java.util.Date
 
 data class LoginResponse(
     val success: Boolean,
-    val message: String?,
-    val accessToken: String?,
-    val loginId: String?,
-    val name: String?,
-    val gender: String?,
+    val message: String,
+
+    @SerializedName("accessToken")
+    val accessToken: String,
+
+    @SerializedName("loginId")
+    val loginId: String,
+
+    @SerializedName("name")
+    val name: String,
+
+
+    @SerializedName("gender")
+    val gender: String,
+
     @SerializedName("birthday")
-    val birthday: String?,
-    val images: List<String>?
+    val birthday: String? = null,
+
+    @SerializedName("images")
+    val images: List<String>? = null
 )

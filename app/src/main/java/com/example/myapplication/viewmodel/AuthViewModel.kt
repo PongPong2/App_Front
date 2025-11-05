@@ -16,7 +16,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import android.provider.OpenableColumns
-import com.example.myapplication.API.RetrofitClient
+import com.example.myapplication.api.RetrofitClient
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
