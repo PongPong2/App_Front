@@ -116,7 +116,7 @@ class LoginActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
 
-                            val intent = Intent(this@LoginActivity, MainPageActivity::class.java)
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intent)
                             finish()
                         } else {

@@ -23,6 +23,7 @@ import com.example.myapplication.util.PREFS_NAME
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.example.myapplication.util.BASE_URL
 
 // SharedPreferences 키는 MainPaageActivity 외부의 상수로 정의되어 있다고 가정합니다.
 
@@ -150,7 +151,7 @@ class MainPageActivity : AppCompatActivity() {
 
         if (urlFragment.isNullOrEmpty()) return null
 
-        return RetrofitClient.BASE_URL + urlFragment
+        return BASE_URL + urlFragment
     }
 
     private fun displayProfileImage() {

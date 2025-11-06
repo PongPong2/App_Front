@@ -5,3 +5,8 @@ const val KEY_NAME = "user_name"
 const val KEY_GENDER = "user_gender"
 const val KEY_AUTO_LOGIN = "auto_login"
 const val KEY_PROFILE_IMAGE_URL = "user_profile_image_url"
+
+
+
+// IP 주소
+const val BASE_URL = "http://192.168.1.102:8080"
