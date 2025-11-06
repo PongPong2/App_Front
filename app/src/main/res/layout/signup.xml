@@ -187,7 +187,9 @@
             android:textColor="@android:color/background_dark"
             android:textSize="18sp"
             app:cornerRadius="20dp"
+
             app:strokeColor="@android:color/darker_gray"/>
 
     </LinearLayout>
 </ScrollView>
+

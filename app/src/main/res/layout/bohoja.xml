@@ -82,7 +82,7 @@
                         android:padding="13dp">
 
                         <ImageView
-                            android:id="@+id/iv_profile_picture1"
+                            android:id="@+id/bohojaProfile1"
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
@@ -234,7 +234,7 @@
                         android:padding="13dp">
 
                         <ImageView
-                            android:id="@+id/iv_profile_picture2"
+                            android:id="@+id/bohojaProfile2"
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
@@ -388,7 +388,7 @@
                         android:padding="13dp">
 
                         <ImageView
-                            android:id="@+id/iv_profile_picture3"
+                            android:id="@+id/bohojaProfile3"
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"

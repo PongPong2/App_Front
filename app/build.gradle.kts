@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    kotlin("kapt")
 }
 
 android {
@@ -54,7 +55,6 @@ android {
     }
 
     packaging {
-        // Kakao SDK와 Retrofit 사용 시 필요한 리소스 충돌 방지
         resources {
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/DEPENDENCIES"
@@ -105,7 +105,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation("com.jakewharton.timber:timber:5.0.1") // 로그 확인용
-
+    implementation("androidx.activity:activity-ktx:1.9.0")
+    implementation("com.google.code.gson:gson:2.10.1")
     // Kakao SDK
     val kakaoSdkVersion = "2.21.0"
     implementation("com.kakao.sdk:v2-share:$kakaoSdkVersion")
@@ -120,4 +121,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    testImplementation(kotlin("test"))
 }

@@ -213,7 +213,7 @@ class SignUpActivity : AppCompatActivity() {
         val request = UserRegistrationRequest(
             loginId = loginId,
             password = password,
-            username = name,
+            name = name,
             gender = gender,
             birthday = birthdayStr,
             caregiverId = null
