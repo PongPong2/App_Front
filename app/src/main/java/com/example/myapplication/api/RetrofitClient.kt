@@ -17,18 +17,22 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import com.example.myapplication.util.BASE_URL
+
+/**
+ * Retrofit 인스턴스를 관리하는 싱글톤 객체입니다.
+ * 🚨 사용하기 전에 반드시 Application 클래스 등에서 RetrofitClient.initialize(context)를 호출해야 합니다.
+ */
 object RetrofitClient {
 
+    // 🚨 인증 인터셉터에서 SharedPrefsManager를 사용하기 위해 Application Context가 필요합니다.
     private lateinit var applicationContext: Context
-
-    // BASE_URL은 팀원과 내 것 중 통신이 잘되는 것으로 최종 선택해야 합니다.
 
     fun initialize(context: Context) {
         this.applicationContext = context.applicationContext
     }
 
 
-    // 1. Gson 설정 (팀원 코드 반영: LocalDate, LocalDateTime 어댑터)
+    // 1. Gson 설정 (LocalDate, LocalDateTime 처리를 위한 커스텀 어댑터 포함)
     private val gson: Gson by lazy {
         GsonBuilder()
             // LocalDate 어댑터 (예: "1999-03-12")
@@ -60,21 +64,20 @@ object RetrofitClient {
             .create()
     }
 
-    // 2. OkHttpClient 설정 (내 코드 반영: 인증 Interceptor)
+    // 2. OkHttpClient 설정 (인증 헤더 추가, 로깅, 타임아웃 설정)
     private val client: OkHttpClient by lazy {
 
-        // a) 인증 Interceptor: 저장된 토큰을 가져와 헤더에 추가
+        // a) 🚨 인증 인터셉터: API 요청 시 헤더에 자동으로 AccessToken(JWT)을 추가합니다.
         val authInterceptor = Interceptor { chain ->
             val originalRequest = chain.request()
 
-            // SharedPrefsManager는 Context가 초기화되었을 때만 작동
+            // 🚨 Context가 초기화되어야만 SharedPrefsManager 사용 가능
             val token = SharedPrefsManager(applicationContext).getAccessToken()
 
             val requestBuilder = originalRequest.newBuilder()
-                // 팀원 코드의 User-Agent 헤더 추가
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36")
 
-            // 토큰이 존재하면 Authorization 헤더를 추가
+            // 토큰이 있는 경우에만 "Authorization" 헤더 추가
             token?.let {
                 requestBuilder.header("Authorization", "Bearer $it")
             }
@@ -82,33 +85,35 @@ object RetrofitClient {
             chain.proceed(requestBuilder.build())
         }
 
-        // 로깅 Interceptor
+        // b) 로깅 인터셉터 (개발용: Logcat에서 API 통신 내역 확인)
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        // OkHttpClient 빌드: 타임아웃 설정 통합
+        // c) OkHttpClient 빌드: 타임아웃 및 인터셉터 적용
         OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
+            .addInterceptor(authInterceptor) // 🚨 인증 헤더를 추가하는 인터셉터 적용
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS) // 팀원 코드 기준
-            .readTimeout(30, TimeUnit.SECONDS)    // 팀원 코드 기준
-            .writeTimeout(30, TimeUnit.SECONDS)   // 팀원 코드 기준
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
 
-    // 3. Retrofit Builder 및 Service 정의
+    // 3. Retrofit 인스턴스 (Base URL, OkHttpClient, Gson 변환기 적용)
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create(gson)) // 💡 커스텀 Gson 적용
+            .baseUrl(BASE_URL) // 🚨 BASE_URL (예: "http://10.0.2.2:8080/")
+            .client(client) // 🚨 위에서 설정한 OkHttpClient (인증 헤더 포함) 적용
+            .addConverterFactory(GsonConverterFactory.create(gson)) // 🚨 날짜 파싱용 커스텀 Gson 적용
             .build()
     }
 
-    // 4. 모든 서비스 정의
+    // 4. 🚨 Activity에서 호출할 서비스들 정의
+    // (Activity에서는 RetrofitClient.apiService.메서드() 형태로 호출)
 
+    // 🚨 YoyangsaActivity에서 요양사 정보를 조회할 때 사용할 서비스
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
@@ -121,7 +126,7 @@ object RetrofitClient {
         retrofit.create(HealthService::class.java)
     }
 
-    // [추가된 부분] 첫 번째 코드의 GuardianApiService를 동일한 Retrofit 설정으로 생성
+    // 🚨 BohojaActivity에서 보호자 정보를 조회할 때 사용할 서비스
     val guardianApiService: GuardianApiService by lazy {
         retrofit.create(GuardianApiService::class.java)
     }

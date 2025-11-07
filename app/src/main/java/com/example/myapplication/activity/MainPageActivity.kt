@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.myapplication.util.KEY_PROFILE_IMAGE_URL
 import com.example.myapplication.util.PREFS_NAME
 import java.time.LocalDateTime
@@ -163,6 +164,7 @@ class MainPageActivity : AppCompatActivity() {
             binding.silverImage.load(it) {
                 error(R.drawable.noin)
                 placeholder(R.drawable.noin)
+                transformations(CircleCropTransformation())
             }
         } ?: run {
             binding.silverImage.setImageResource(R.drawable.noin)

@@ -75,6 +75,8 @@ dependencies {
     // Activity & ViewModel Extensions
     implementation("androidx.activity:activity-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
 
     // Compose
     implementation(libs.androidx.activity.compose)

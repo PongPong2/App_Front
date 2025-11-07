@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.myapplication.R
 import com.example.myapplication.api.RetrofitClient // BASE_URL 사용
 import kotlinx.coroutines.launch
@@ -130,6 +131,7 @@ class BohojaActivity : AppCompatActivity() {
                 profile1.load(fullImageUrl) {
                     placeholder(R.drawable.girl)
                     error(R.drawable.girl)
+                    transformations(CircleCropTransformation())
                 }
             } else {
                 Log.d("BohojaActivity", "No image URL found for Guardian 1. Using default.")
@@ -163,6 +165,7 @@ class BohojaActivity : AppCompatActivity() {
                 profile2.load(fullImageUrl) {
                     placeholder(R.drawable.men)
                     error(R.drawable.men)
+                    transformations(CircleCropTransformation())
                 }
             } else {
                 Log.d("BohojaActivity", "No image URL found for Guardian 2. Using default.")
@@ -196,6 +199,7 @@ class BohojaActivity : AppCompatActivity() {
                 profile3.load(fullImageUrl) {
                     placeholder(R.drawable.girl2)
                     error(R.drawable.girl2)
+                    transformations(CircleCropTransformation())
                 }
             } else {
                 Log.d("BohojaActivity", "No image URL found for Guardian 3. Using default.")
