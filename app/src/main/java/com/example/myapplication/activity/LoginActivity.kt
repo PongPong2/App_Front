@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.api.RetrofitClient
 import com.example.myapplication.data_model.LoginRequest // DTO 경로 확인
-import com.example.myapplication.data_model.LoginResponse // LoginResponse DTO import 필요
+import com.example.myapplication.data_model.LoginResponse
 import com.example.myapplication.databinding.LoginBinding
 import com.example.myapplication.util.SharedPrefsManager // SharedPrefsManager import
 import com.example.myapplication.util.PREFS_NAME // 💡 AppConstants.kt에서 import
@@ -70,7 +70,6 @@ class LoginActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // RetrofitClient.apiService.login 호출 (authService가 정의되어 있다면 변경 권장)
                 val response = RetrofitClient.apiService.login(request)
 
                 withContext(Dispatchers.Main) {
@@ -88,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
                             val token = loginResponse.accessToken
                             val silverId = loginResponse.loginId // SilverId로 사용
                             val savedName = loginResponse.name.takeIf { !it.isNullOrEmpty() } ?: ""
-                            val savedGender = loginResponse.gender.takeIf { !it.isNullOrEmpty() } ?: "알 수 없음"
+                            val savedBirthday = loginResponse.birthday.takeIf { !it.isNullOrEmpty() } ?: "알 수 없음"
                             val autoLoginChecked = binding.checkAutoLogin.isChecked // 체크박스 상태 획득
 
                             // 토큰, SilverId 필수 확인
@@ -101,7 +100,7 @@ class LoginActivity : AppCompatActivity() {
                             sharedPrefsManager.saveUserSession(
                                 silverId = silverId,
                                 username = savedName,
-                                gender = savedGender,
+                                birthday = savedBirthday,
                                 accessToken = token
                             )
 

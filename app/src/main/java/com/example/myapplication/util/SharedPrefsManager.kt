@@ -6,8 +6,8 @@ class SharedPrefsManager(context: Context) {
 
     private val PREFS_FILE_NAME = "user_session"
     private val KEY_USERNAME = "username"
-    private val KEY_GENDER = "gender"
     private val KEY_SILVER_ID = "silverId"
+    private val KEY_BIRTHDAY = "birthday"
     private val KEY_ACCESS_TOKEN = "accessToken" // 토큰 키
 
     private val prefs = context.getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE)
@@ -15,11 +15,11 @@ class SharedPrefsManager(context: Context) {
     /**
      * 로그인 성공 시 사용자 세션 정보(ID, 이름, 성별, 토큰)를 한 번에 저장합니다.
      */
-    fun saveUserSession(silverId: String, username: String, gender: String, accessToken: String) {
+    fun saveUserSession(silverId: String, username: String, birthday: String, accessToken: String) {
         prefs.edit().apply {
             putString(KEY_SILVER_ID, silverId)
             putString(KEY_USERNAME, username)
-            putString(KEY_GENDER, gender)
+            putString(KEY_BIRTHDAY, birthday)
             putString(KEY_ACCESS_TOKEN, accessToken) // 토큰 저장
             apply()
         }
@@ -50,7 +50,7 @@ class SharedPrefsManager(context: Context) {
     // --- 사용자 정보 조회 ---
 
     fun getUsername(): String = prefs.getString(KEY_USERNAME, "환자 이름 없음") ?: "환자 이름 없음"
-    fun getGender(): String = prefs.getString(KEY_GENDER, "정보 없음") ?: "정보 없음"
+    fun getBirthday(): String = prefs.getString(KEY_BIRTHDAY, "정보 없음") ?: "정보 없음"
 
     /**
      * 저장된 Silver ID를 불러옵니다. (GuardianActivity 등에서 사용)

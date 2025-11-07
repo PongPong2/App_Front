@@ -25,9 +25,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import com.example.myapplication.util.BASE_URL
-
-// SharedPreferences 키는 MainPaageActivity 외부의 상수로 정의되어 있다고 가정합니다.
-
 class MainPageActivity : AppCompatActivity() {
 
 
@@ -44,13 +41,13 @@ class MainPageActivity : AppCompatActivity() {
 
         // 사용자 정보 표시
         val username = prefsManager.getUsername()
-        val gender = prefsManager.getGender()
+        val birthday = prefsManager.getBirthday()
 
         // XML ID에 맞춰 binding 사용
         binding.mAName.text = username
-        binding.mAGender.text = gender
+        binding.mAbirthday.text = birthday
 
-        Log.d("MPA", "MainPage loaded. User: $username, Gender: $gender")
+        Log.d("MPA", "MainPage loaded. User: $username, birthday: $birthday")
 
         // 프로필 이미지 로드
         displayProfileImage()
