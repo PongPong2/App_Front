@@ -15,7 +15,6 @@ data class LoginResponse(
     @SerializedName("name")
     val name: String,
 
-
     @SerializedName("gender")
     val gender: String,
 

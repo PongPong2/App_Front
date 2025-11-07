@@ -25,40 +25,41 @@ import com.example.myapplication.api.UserService
 import com.example.myapplication.data_model.UserRegistrationRequest
 import com.example.myapplication.data_state.RegistrationState
 import com.example.myapplication.databinding.SignupBinding
-import com.example.myapplication.util.BirthDayTextWatcher // 💡 Import
+import com.example.myapplication.util.BirthDayTextWatcher
 import com.example.myapplication.viewmodel.SignUpViewModel
-import com.example.myapplication.repository.UserRepositoryImpl // 💡 Import
-import com.google.gson.Gson // 💡 Import
+import com.example.myapplication.repository.UserRepositoryImpl
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException // 💡 Import
+import java.time.format.DateTimeParseException
 import java.util.Locale
 
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: SignupBinding
+
+    // 💡 여러 이미지를 받을 수 있으므로 'List' 타입으로 선언 (올바름)
     private var selectedImageUris = listOf<Uri>()
+
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
-
     // 💡 ViewModel 초기화: 커스텀 Factory를 사용하여 의존성 주입
+    // (로그에 보이던 $Proxy2 ClassCastException 오류를 해결하는 올바른 방식)
     private val viewModel: SignUpViewModel by viewModels {
         SignUpViewModelFactory(application, RetrofitClient.userService)
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        // ... (기존 코드와 동일) ...
         binding = SignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initActivityResultLaunchers() // 이미지 런처 초기화
 
-        // 💡 ViewBinding 사용
         binding.birthdayInput.addTextChangedListener(BirthDayTextWatcher(binding.birthdayInput))
         setupBirthdayField() // DatePickerDialog 설정
 
@@ -78,7 +79,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun setupBirthdayField() {
-        // 💡 [수정] ViewBinding 사용
+        // ... (기존 코드와 동일) ...
         val inputBirthday = binding.birthdayInput
         val calendar = Calendar.getInstance()
 
@@ -109,10 +110,12 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun initActivityResultLaunchers() {
         galleryLauncher = registerForActivityResult(
+            // 💡 '여러' 이미지를 가져오는 계약(Contract) 사용
             ActivityResultContracts.GetMultipleContents()
-        ) { uris: List<Uri>? ->
+        ) { uris: List<Uri>? -> // 💡 반환 타입이 'List<Uri>'임
             uris?.let {
                 if (it.isNotEmpty()) {
+                    // 💡 selectedImageUris 변수에 'List' 자체를 저장 (올바름)
                     selectedImageUris = it
                     binding.imgProfile.setImageURI(it[0]) // 첫 번째 이미지를 프로필로 표시
                     Toast.makeText(this, "이미지 ${uris.size}장이 선택되었습니다.", Toast.LENGTH_SHORT).show()
@@ -123,6 +126,7 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         permissionLauncher = registerForActivityResult(
+            // ... (기존 코드와 동일) ...
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
@@ -134,6 +138,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun checkPermissionAndOpenGallery() {
+        // ... (기존 코드와 동일) ...
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
@@ -151,6 +156,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun showRationaleDialog(permission: String) {
+        // ... (기존 코드와 동일) ...
         AlertDialog.Builder(this)
             .setTitle("권한 필요")
             .setMessage("프로필 이미지를 등록하고 서버로 전송하려면 사진첩 접근 권한이 필요합니다.")
@@ -166,40 +172,31 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun attemptRegistration() {
+        // ... (기존 코드와 동일: 유효성 검사 등) ...
         val name = binding.inputName.text.toString().trim()
         val loginId = binding.inputId.text.toString().trim()
         val password = binding.inputPassword.text.toString().trim()
         val passwordConfirm = binding.inputPasswordConfirm.text.toString().trim()
-
-        // [수정] ViewBinding 사용 (birthdayInput)
         val birthdayStr = binding.birthdayInput.text.toString().trim()
-
-        // 💡 [수정] 성별 타입을 Char 대신 String?으로 변경
         val gender: String? = when (binding.radioGroupGender.checkedRadioButtonId) {
             binding.radioMale.id -> "M"
             binding.radioFemale.id -> "F"
             else -> null
         }
 
-        // 1. 유효성 검사
+        // ... (유효성 검사 로직) ...
         if (name.isEmpty() || loginId.isEmpty() || password.isEmpty() || passwordConfirm.isEmpty() || birthdayStr.isEmpty()) {
             Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (password != passwordConfirm) {
             Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
-            binding.inputPassword.text?.clear()
-            binding.inputPasswordConfirm.text?.clear()
             return
         }
-
         if (gender == null) {
             Toast.makeText(this, "성별을 선택해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
-
-        // 2. 생년월일 형식 검사
         try {
             LocalDate.parse(birthdayStr, DateTimeFormatter.ISO_LOCAL_DATE)
         } catch (e: DateTimeParseException) {
@@ -207,7 +204,10 @@ class SignUpActivity : AppCompatActivity() {
             return
         }
 
-        // 3. 요청 객체 생성 및 ViewModel 호출
+        // 💡 [핵심 수정 완료된 부분]
+        // 💡 selectedImageUris(List<Uri>)에서 첫 번째 이미지를(Uri?) 안전하게 추출합니다.
+        // 💡 .firstOrNull()을 사용하여 리스트가 비어있으면(EmptyList) null을 반환합니다.
+        // 💡 이 코드가 'ArrayList/EmptyList cannot be cast to Uri' 오류를 해결합니다.
         val profileUri: Uri? = selectedImageUris.firstOrNull()
 
         val request = UserRegistrationRequest(
@@ -219,10 +219,12 @@ class SignUpActivity : AppCompatActivity() {
             caregiverId = null
         )
 
+        // 💡 ViewModel으로 '단일 Uri' (또는 null)를 전달합니다. (올바름)
         viewModel.register(request, profileUri)
     }
 
     private fun observeRegistrationState() {
+        // ... (기존 코드와 동일) ...
         lifecycleScope.launch {
             viewModel.registrationState.collect { state ->
                 when (state) {
@@ -236,7 +238,7 @@ class SignUpActivity : AppCompatActivity() {
                         val intent = Intent(this@SignUpActivity, LoginActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                         startActivity(intent)
-                        finish() // 현재 Activity를 종료하고 스택에서 제거
+                        finish()
                     }
                     is RegistrationState.Error -> {
                         Toast.makeText(this@SignUpActivity, state.message, Toast.LENGTH_LONG).show()
@@ -253,27 +255,24 @@ class SignUpActivity : AppCompatActivity() {
     }
 }
 
-// ## ⚙ViewModel Factory
-
-/**
- * SignUpViewModel에 필요한 의존성(UserRepository, Application)을 수동으로 주입하기 위한 팩토리입니다.
- * 이 팩토리는 SignUpActivity 내부에 위치해도 되지만, 별도 파일에 위치하는 것이 일반적입니다.
- */
+// 💡 [핵심 수정 완료된 부분]
+// (로그에 보이던 $Proxy2 ClassCastException 및 NoSuchMethodException 오류를 해결하는 올바른 ViewModel Factory 구현)
 class SignUpViewModelFactory(
     private val application: Application,
-    private val userService: UserService // Retrofit Service Interface
+    private val userService: UserService // 💡 Retrofit Service를 직접 받음
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SignUpViewModel::class.java)) {
             val gson = Gson()
+            // 💡 Repository 생성 시 필요한 userService를 정확히 주입
             val userRepository = UserRepositoryImpl(
                 userService,
                 application.applicationContext,
                 gson
             )
-            // SignUpViewModel의 생성자에 UserRepository와 Application 객체를 전달
+            // 💡 ViewModel 생성 시 Repository와 Application을 주입
             return SignUpViewModel(userRepository, application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

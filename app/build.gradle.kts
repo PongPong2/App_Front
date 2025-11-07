@@ -107,6 +107,8 @@ dependencies {
     implementation("com.jakewharton.timber:timber:5.0.1") // 로그 확인용
     implementation("androidx.activity:activity-ktx:1.9.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
     // Kakao SDK
     val kakaoSdkVersion = "2.21.0"
     implementation("com.kakao.sdk:v2-share:$kakaoSdkVersion")

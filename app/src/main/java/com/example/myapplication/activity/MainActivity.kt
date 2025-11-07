@@ -58,9 +58,10 @@ import java.time.Duration
 import java.time.LocalTime
 import com.example.myapplication.util.PREFS_NAME
 import com.example.myapplication.util.KEY_NAME
-import com.example.myapplication.util.KEY_GENDER
+import com.example.myapplication.util.KEY_BIRTHDAY
 import com.example.myapplication.util.KEY_AUTO_LOGIN
 import com.example.myapplication.util.KEY_PROFILE_IMAGE_URL
+import java.util.Calendar
 
 
 class MainActivity : ComponentActivity() {
@@ -303,13 +304,13 @@ fun isAutoLoggedIn(context: Context): Boolean {
     return isChecked && userNameSaved != null
 }
 
-fun saveLoginInfo(context: Context, name: String, gender: String, autoLogin: Boolean) {
+fun saveLoginInfo(context: Context, name: String, birthday: String, autoLogin: Boolean) {
     // 자동 로그인 설정 저장을 위해 유지
     val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     with(sharedPreferences.edit()) {
         putString(KEY_NAME, name)
-        putString(KEY_GENDER, gender)
+        putString(KEY_BIRTHDAY, birthday)
         putBoolean(KEY_AUTO_LOGIN, autoLogin)
         apply()
     }
@@ -326,8 +327,27 @@ fun LoginObserver(viewModel: LoginViewModel, sharedPrefsManager: SharedPrefsMana
                 val response = state.loginResponse
                 val actualSilverId = response?.loginId ?: "UNKNOWN_ID"
                 val name = response?.name ?: "환자"
-                val gender = response?.gender ?: "정보 없음"
                 val token = response?.accessToken ?: ""
+                val birthYearString = response?.birthday
+                var ageString: String
+                if (!birthYearString.isNullOrEmpty() && birthYearString != "정보 없음") {
+                    try {
+                        // 1. 현재 년도 가져오기 (호환성을 위해 Calendar 사용)
+                        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                        // 2. 생년월일(String)을 숫자(Int)로 변환
+                        val birthYear = birthYearString.toInt()
+                        // 3. 나이 계산
+                        val age = currentYear - birthYear
+                        ageString = "만 $age" // 결과: "26"
+
+                    } catch (e: NumberFormatException) {
+                        Log.e("AgeCalcError", "Birth year format error: $birthYearString")
+                        ageString = "정보 없음" // "1999" 형식이 아닌 경우
+                    }
+                } else {
+                    ageString = "정보 없음" // "정보 없음" 또는 null인 경우
+                }
+
 
                 val autoLoginState = MainActivity.isAutoLoginCheckedState
                 val profileImageUrl = response?.images?.firstOrNull()
@@ -335,8 +355,8 @@ fun LoginObserver(viewModel: LoginViewModel, sharedPrefsManager: SharedPrefsMana
                 Log.d("IMAGE_DEBUG", "서버 반환 이미지 URL 조각: $profileImageUrl")
 
                 // 세션 및 자동 로그인 정보 저장 (토큰 포함)
-                sharedPrefsManager.saveUserSession(actualSilverId, name, gender, token)
-                saveLoginInfo(context, name, gender, autoLoginState) // 기존 자동 로그인 설정 저장
+                sharedPrefsManager.saveUserSession(actualSilverId, name, ageString, token)
+                saveLoginInfo(context, name, ageString, autoLoginState) // 기존 자동 로그인 설정 저장
 
                 if (!profileImageUrl.isNullOrEmpty()) {
                     sharedPrefsManager.saveString(KEY_PROFILE_IMAGE_URL, profileImageUrl)
