@@ -59,9 +59,10 @@ class HealthSyncLogic(private val context: Context) {
             newSteps = max(newSteps, 0)
 
             // --- 심박수 (Heart Rate) ---
-            val heartRateSamples = healthConnectManager.readHeartRateSamples(startTime, endTime)
+//            val heartRateSamples = healthConnectManager.readHeartRateSamples(startTime, endTime)
+            val heartRateSamples = healthConnectManager.getFakeHeartRateSamples(startTime, endTime)
             val heartRateAvgBpm = heartRateSamples.map { it.beatsPerMinute.toDouble() }.average()
-            val safeHeartRate = if (heartRateAvgBpm.isNaN()) 0.0 else heartRateAvgBpm
+            val roundedHeartRate = if (heartRateAvgBpm.isNaN()) 0L else heartRateAvgBpm.toLong()
 
             // --- 칼로리 (Calories) ---
             val previousCaloriesTotal = dataStore.getPreviousCaloriesTotal()
@@ -89,16 +90,21 @@ class HealthSyncLogic(private val context: Context) {
             var sleepStageDeepMin = 0L
             var sleepStageRemMin = 0L
             var sleepStageLightMin = 0L
-
-            for (session in sleepSessions) {
-                totalSleepDurationMin += Duration.between(session.startTime, session.endTime).toMinutes()
-                for (stage in session.stages) {
-                    val duration = Duration.between(stage.startTime, stage.endTime).toMinutes()
-                    when (stage.stage) {
-                        SleepSessionRecord.STAGE_TYPE_AWAKE -> sleepStageWakeMin += duration
-                        SleepSessionRecord.STAGE_TYPE_DEEP -> sleepStageDeepMin += duration
-                        SleepSessionRecord.STAGE_TYPE_REM -> sleepStageRemMin += duration
-                        SleepSessionRecord.STAGE_TYPE_LIGHT -> sleepStageLightMin += duration
+            //테스트를 위해 필요함
+            if (sleepSessions.isEmpty()) {
+                sleepStageWakeMin = SYNC_INTERVAL_MINUTES // 10분으로 설정
+            } else {
+                for (session in sleepSessions) {
+                    totalSleepDurationMin += Duration.between(session.startTime, session.endTime)
+                        .toMinutes()
+                    for (stage in session.stages) {
+                        val duration = Duration.between(stage.startTime, stage.endTime).toMinutes()
+                        when (stage.stage) {
+                            SleepSessionRecord.STAGE_TYPE_AWAKE -> sleepStageWakeMin += duration
+                            SleepSessionRecord.STAGE_TYPE_DEEP -> sleepStageDeepMin += duration
+                            SleepSessionRecord.STAGE_TYPE_REM -> sleepStageRemMin += duration
+                            SleepSessionRecord.STAGE_TYPE_LIGHT -> sleepStageLightMin += duration
+                        }
                     }
                 }
             }
@@ -117,7 +123,7 @@ class HealthSyncLogic(private val context: Context) {
                 walkingSteps = newSteps.toInt(),
                 totalCaloriesBurned = newCalories,
                 spo2 = fakeSpo2.toInt(),
-                heartRateAvg = safeHeartRate,
+                heartRateAvg = roundedHeartRate,
 
                 sleepDurationMin = totalSleepDurationMin,
                 sleepStageWakeMin = sleepStageWakeMin,
@@ -128,9 +134,9 @@ class HealthSyncLogic(private val context: Context) {
 
             // --- 서버 전송 ---
             try {
-                // RetrofitClient.healthService.createHealthData(healthRequest) // 실제 서버 호출
-                val logMessage = "서버 전송 데이터 - 걸음: ${newSteps}보, 칼로리: %.2f kcal, 심박수: %.1f bpm"
-                    .format(newCalories.toDouble(), safeHeartRate)
+                 RetrofitClient.healthService.createHealthData(healthRequest) // 실제 서버 호출
+                val logMessage = "서버 전송 데이터 - 걸음: ${newSteps}보, 칼로리: %.2f kcal, 심박수: %d bpm, 산소포화도: %d"
+                    .format(newCalories.toDouble(), roundedHeartRate, fakeSpo2.toInt())
                 Log.d("SYNC_LOGIC", logMessage)
             } catch (apiError: Exception) {
                 Log.e("SYNC_LOGIC", "API 서버 전송 실패", apiError)

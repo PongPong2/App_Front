@@ -8,7 +8,7 @@ data class HealthRequest (
     val walkingSteps: Int,
     val totalCaloriesBurned: Double,
     val spo2: Int,
-    val heartRateAvg: Double,
+    val heartRateAvg: Long,
 
     // 수면 단계 필드
     val sleepDurationMin: Long,
