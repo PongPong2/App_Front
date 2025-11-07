@@ -12,6 +12,7 @@ import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABL
 import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.records.*
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -27,7 +28,7 @@ import kotlin.random.nextInt
 
 // Health Connect를 사용할 수 있는 최소 Android 레벨
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
-
+private const val SAMSUNG_HEALTH_PACKAGE = "com.sec.android.app.health"
 /**
  * Health Connect의 읽기 및 쓰기
  */
@@ -68,20 +69,18 @@ class HealthConnectManager(private val context: Context) {
     /**
      * 지정된 날짜의 총 걸음 수를 집계하여 반환
      */
-    suspend fun readCumulativeTotalSteps(): Long { // 인자 (day: ZonedDateTime) 제거
-        val now = Instant.now()
-        // 시스템 기본 시간대를 사용하여 정확한 '오늘 자정' Instant 계산
-        val startOfDay = ZonedDateTime.now(ZoneId.systemDefault())
-            .truncatedTo(ChronoUnit.DAYS)
-            .toInstant()
+    suspend fun readTotalStepsForDay(day: ZonedDateTime): Long? {
+        val startOfDay = day.truncatedTo(ChronoUnit.DAYS).toInstant()
+        // 하루의 끝 (다음 날 자정 직전)
+        val endOfDay = startOfDay.plus(Duration.ofDays(1)).minusMillis(1)
 
         val request = AggregateRequest(
             metrics = setOf(StepsRecord.COUNT_TOTAL),
-            timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
+            timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
         )
 
         val response = healthConnectClient.aggregate(request)
-        return response[StepsRecord.COUNT_TOTAL] ?: 0L
+        return response[StepsRecord.COUNT_TOTAL]
     }
 
     /**
@@ -136,21 +135,18 @@ class HealthConnectManager(private val context: Context) {
     /**
      * 지정된 기간의 총 소모 칼로리를 집계
      */
-    suspend fun readCumulativeTotalCalories(): Double { // 인자 (day: ZonedDateTime) 제거
-        val now = Instant.now()
-        // 시스템 기본 시간대를 사용하여 정확한 '오늘 자정' Instant 계산
-        val startOfDay = ZonedDateTime.now(ZoneId.systemDefault())
-            .truncatedTo(ChronoUnit.DAYS)
-            .toInstant()
+    suspend fun readTotalCaloriesForDay(day: ZonedDateTime): Double? {
+        val startOfDay = day.truncatedTo(ChronoUnit.DAYS).toInstant()
+        val endOfDay = startOfDay.plus(Duration.ofDays(1)).minusMillis(1) // 하루의 끝
 
         val request = AggregateRequest(
             metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
-            timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
+            timeRangeFilter = TimeRangeFilter.between(startOfDay, endOfDay)
         )
 
         val response = healthConnectClient.aggregate(request)
-        // Double로 반환 (Worker의 차감 로직에 필요)
-        return response[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0
+        // Double 타입인 Energy 객체에서 Kilocalories 값을 가져와 Double? 로 반환
+        return response[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories
     }
 
     /**
@@ -198,48 +194,8 @@ class HealthConnectManager(private val context: Context) {
     // 데이터 기록하기 (WRITE 전용)
     // (체중, 혈당, 혈압)
 
-    /**
-     * [WeightRecord]를 Health Connect에 기록
-     */
-    suspend fun writeWeightInput(weightInput: Double) {
-        try {
-            val time = Instant.now()
-            val weightRecord = WeightRecord(
-                weight = Mass.kilograms(weightInput),
-                time = time,
-                zoneOffset = ZonedDateTime.now().offset,
-                metadata = Metadata.manualEntry()
-            )
-            healthConnectClient.insertRecords(listOf(weightRecord))
-            Toast.makeText(context, "체중 ${weightInput}kg 기록 성공", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e("HC_WRITE", "체중 기록 실패: ${e.message}")
-            Toast.makeText(context, "체중 기록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
 
-    /**
-     * [BloodGlucoseRecord]를 Health Connect에 기록
-     * @param concentration 혈당 농도 (mg/dL 단위)
-     */
-    suspend fun writeBloodGlucose(concentration: Double) {
-        try {
-            val time = Instant.now()
-            val glucoseRecord = BloodGlucoseRecord(
-                level = BloodGlucose.milligramsPerDeciliter(concentration),
-                specimenSource = BloodGlucoseRecord.SPECIMEN_SOURCE_CAPILLARY_BLOOD,
-                mealType = BloodGlucoseRecord.RELATION_TO_MEAL_UNKNOWN,
-                time = time,
-                zoneOffset = ZonedDateTime.now().offset,
-                metadata = Metadata.manualEntry()
-            )
-            healthConnectClient.insertRecords(listOf(glucoseRecord))
-            Toast.makeText(context, "혈당 ${concentration}mg/dL 기록 성공", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e("HC_WRITE", "혈당 기록 실패: ${e.message}")
-            Toast.makeText(context, "혈당 기록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
+
 
     /**
      * [BloodPressureRecord]를 Health Connect에 기록
@@ -262,28 +218,7 @@ class HealthConnectManager(private val context: Context) {
     }
 
 
-    /**
-     * [BodyTemperatureRecord]를 Health Connect에 기록
-     * @param temperatureInput 체온 값 (섭씨 또는 화씨, SDK 단위에 맞춤)
-     */
-    suspend fun writeBodyTemperature(temperatureInput: Double) {
-        try {
-            val time = Instant.now()
-            // Health Connect는 BodyTemperature을 주로 섭씨(DegreesCelsius)로 처리합니다.
-            val tempRecord = BodyTemperatureRecord(
-                temperature = Temperature.celsius(temperatureInput),
-                time = time,
-                zoneOffset = ZonedDateTime.now().offset,
-                measurementLocation = MEASUREMENT_LOCATION_EAR, // 필요에 따라 변경
-                metadata = Metadata.manualEntry()
-            )
-            healthConnectClient.insertRecords(listOf(tempRecord))
-            Toast.makeText(context, "체온 ${temperatureInput}°C 기록 성공", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e("HC_WRITE", "체온 기록 실패: ${e.message}")
-            Toast.makeText(context, "체온 기록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
+
 
     // 수면점수 계산
     suspend fun calculateSleepScoreForPreviousNight(): Int? {

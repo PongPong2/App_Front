@@ -14,6 +14,7 @@ import kotlin.math.max
 import androidx.health.connect.client.records.SleepSessionRecord
 import java.time.Duration
 import java.time.LocalTime // LocalTime 임포트 추가
+import java.time.ZonedDateTime
 
 // 작업 결과를 나타내는 자체 Enum 정의 (WorkManager.Result 대체)
 enum class SyncResult {
@@ -46,12 +47,15 @@ class HealthSyncLogic(private val context: Context) {
         val endTime = Instant.now()
         val startTime = endTime.minus(SYNC_INTERVAL_MINUTES, ChronoUnit.MINUTES)
 
+        val today = ZonedDateTime.now(ZoneId.systemDefault())
         try {
             // --- 걸음수 (Steps) ---
             val previousStepsTotal = dataStore.getPreviousStepsTotal()
-            val currentStepsTotal = healthConnectManager.readCumulativeTotalSteps()
+            val currentStepsTotalNullable = healthConnectManager.readTotalStepsForDay(today)
+            val currentStepsTotal = currentStepsTotalNullable ?: 0L
+            Log.d("SYNC_LOGIC", "이전 걸음수: $previousStepsTotal, 현재 걸음수: $currentStepsTotal")
             var newSteps = currentStepsTotal - previousStepsTotal
-            if (newSteps < 0) newSteps = currentStepsTotal
+//            if (newSteps < 0) newSteps = currentStepsTotal
             newSteps = max(newSteps, 0)
 
             // --- 심박수 (Heart Rate) ---
@@ -61,7 +65,9 @@ class HealthSyncLogic(private val context: Context) {
 
             // --- 칼로리 (Calories) ---
             val previousCaloriesTotal = dataStore.getPreviousCaloriesTotal()
-            val currentCaloriesTotal = healthConnectManager.readCumulativeTotalCalories()
+            val currentCaloriesTotalNullable = healthConnectManager.readTotalCaloriesForDay(today)
+            val currentCaloriesTotal = currentCaloriesTotalNullable ?: 0.0
+            Log.d("SYNC_LOGIC", "이전 칼로리: $previousCaloriesTotal, 현재 칼로리: $currentCaloriesTotal")
             var newCalories = currentCaloriesTotal - previousCaloriesTotal
 
             if (newCalories < 0.0) {
