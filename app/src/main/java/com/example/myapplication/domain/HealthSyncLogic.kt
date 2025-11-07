@@ -1,61 +1,65 @@
-package com.example.myapplication.workers
+package com.example.myapplication.domain
 
 import android.content.Context
 import android.util.Log
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
 import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.data.HealthDataStore
-import androidx.health.connect.client.records.SleepSessionRecord
 import com.example.myapplication.api.RetrofitClient
 import com.example.myapplication.util.SharedPrefsManager
-import com.example.myapplication.domain.HealthRequest
-import java.time.*
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import kotlin.math.max
+import androidx.health.connect.client.records.SleepSessionRecord
+import java.time.Duration
+import java.time.LocalTime // LocalTime 임포트 추가
 
-//보류
-class HealthSyncWorker(
-    appContext: Context,
-    workerParams: WorkerParameters
-) : CoroutineWorker(appContext, workerParams) {
+// 작업 결과를 나타내는 자체 Enum 정의 (WorkManager.Result 대체)
+enum class SyncResult {
+    SUCCESS,
+    FAILURE,
+    RETRY
+}
 
-    private val healthConnectManager = HealthConnectManager(appContext)
-    private val dataStore = HealthDataStore(appContext)
+class HealthSyncLogic(private val context: Context) {
 
-    private val prefsManager = SharedPrefsManager(appContext)
-//    private val gender = 'F'
-    private val age = 70
+    private val healthConnectManager = HealthConnectManager(context)
+    private val dataStore = HealthDataStore(context)
+    private val prefsManager = SharedPrefsManager(context)
 
-    private val RHR_DEFAULT = 0.0
+    // 심박수/칼로리/걸음수 계산 기준 (10분 주기)
+    private val SYNC_INTERVAL_MINUTES = 10L
 
-    override suspend fun doWork(): Result {
+    // HealthSyncWorker의 doWork() 내용을 이곳으로 옮김
+    suspend fun performSync(): SyncResult { // 반환 타입을 SyncResult로 변경
         val silverId = prefsManager.getSilverId()
         val gender = prefsManager.getGender()
-//        val age = prefsManager.get
+
         if (silverId.isNullOrEmpty()) {
-            Log.w("WORKER", "HealthSyncWorker 실행 실패: 로그인된 사용자 ID를 찾을 수 없습니다.")
-            return Result.failure() // ID 없으면 실패 처리
+            Log.w("SYNC_LOGIC", "HealthSync 실행 실패: 로그인된 사용자 ID를 찾을 수 없습니다.")
+            return SyncResult.FAILURE // Result.failure() 대신 사용
         }
-        Log.d("WORKER", "HealthSyncWorker 실행됨 (10분 주기)")
+
+        Log.d("SYNC_LOGIC", "HealthSync 실행됨 (${SYNC_INTERVAL_MINUTES}분 주기)")
 
         val endTime = Instant.now()
-        val startTime = endTime.minus(10, ChronoUnit.MINUTES)
+        val startTime = endTime.minus(SYNC_INTERVAL_MINUTES, ChronoUnit.MINUTES)
 
         try {
-            // 걸음수 (Steps)
+            // --- 걸음수 (Steps) ---
             val previousStepsTotal = dataStore.getPreviousStepsTotal()
             val currentStepsTotal = healthConnectManager.readCumulativeTotalSteps()
             var newSteps = currentStepsTotal - previousStepsTotal
-            if (newSteps < 0) newSteps = currentStepsTotal // 자정 리셋 시
-            newSteps = max(newSteps, 0) // 음수 방지
+            if (newSteps < 0) newSteps = currentStepsTotal
+            newSteps = max(newSteps, 0)
 
-            // 심박수 (Heart Rate)
+            // --- 심박수 (Heart Rate) ---
             val heartRateSamples = healthConnectManager.readHeartRateSamples(startTime, endTime)
             val heartRateAvgBpm = heartRateSamples.map { it.beatsPerMinute.toDouble() }.average()
             val safeHeartRate = if (heartRateAvgBpm.isNaN()) 0.0 else heartRateAvgBpm
 
-            // 칼로리 (Calories)
+            // --- 칼로리 (Calories) ---
             val previousCaloriesTotal = dataStore.getPreviousCaloriesTotal()
             val currentCaloriesTotal = healthConnectManager.readCumulativeTotalCalories()
             var newCalories = currentCaloriesTotal - previousCaloriesTotal
@@ -64,15 +68,15 @@ class HealthSyncWorker(
                 val now = LocalTime.now()
                 val isNearMidnight = now.isBefore(LocalTime.of(0, 30))
                 newCalories = if (isNearMidnight) {
-                    currentCaloriesTotal // 자정 리셋 시
+                    currentCaloriesTotal
                 } else {
-                    Log.w("WORKER", "칼로리 누적값 감소 감지, 0으로 보정")
+                    Log.w("SYNC_LOGIC", "칼로리 누적값 감소 감지, 0으로 보정")
                     0.0
                 }
             }
             newCalories = max(newCalories, 0.0)
 
-            // 수면 데이터
+            // --- 수면 데이터 (Sleep) ---
             val sleepSessions = healthConnectManager.readSleepSessions(startTime, endTime)
             var totalSleepDurationMin = 0L
             var sleepStageWakeMin = 0L
@@ -93,25 +97,22 @@ class HealthSyncWorker(
                 }
             }
 
-            // SpO2 (가짜 값)
+            // --- SpO2 (가짜 값) ---
             val fakeSpo2 = try {
                 healthConnectManager.getFakeOxygenSaturation()
             } catch (e: Exception) {
-                Log.w("WORKER", "SpO2 가져오기 실패, 98%로 대체", e)
+                Log.w("SYNC_LOGIC", "SpO2 가져오기 실패, 98%로 대체", e)
                 98.0
             }
 
 
-            val nowDateTime = LocalDateTime.now(ZoneId.systemDefault())
-
-            val healthRequest = HealthRequest( // 서버 전송용 데이터 객체
+            val healthRequest = HealthRequest(
                 silverId = silverId,
                 walkingSteps = newSteps.toInt(),
                 totalCaloriesBurned = newCalories,
                 spo2 = fakeSpo2.toInt(),
                 heartRateAvg = safeHeartRate,
 
-                // 수면 단계별 시간
                 sleepDurationMin = totalSleepDurationMin,
                 sleepStageWakeMin = sleepStageWakeMin,
                 sleepStageDeepMin = sleepStageDeepMin,
@@ -119,21 +120,26 @@ class HealthSyncWorker(
                 sleepStageLightMin = sleepStageLightMin
             )
 
-            // RetrofitClient.apiService.sendHealthData(healthData) // 이 코드를 활성화하여 서버로 전송
-//            RetrofitClient.healthService.createHealthData(healthRequest)
-            val logMessage = "서버 전송 데이터 - 걸음: ${newSteps}보, 칼로리: %.2f kcal, 심박수: %.1f bpm, RHR: ${RHR_DEFAULT}"
-                .format(newCalories.toDouble(), safeHeartRate)
-            Log.d("WORKER", logMessage)
+            // --- 서버 전송 ---
+            try {
+                // RetrofitClient.healthService.createHealthData(healthRequest) // 실제 서버 호출
+                val logMessage = "서버 전송 데이터 - 걸음: ${newSteps}보, 칼로리: %.2f kcal, 심박수: %.1f bpm"
+                    .format(newCalories.toDouble(), safeHeartRate)
+                Log.d("SYNC_LOGIC", logMessage)
+            } catch (apiError: Exception) {
+                Log.e("SYNC_LOGIC", "API 서버 전송 실패", apiError)
+                return SyncResult.FAILURE // Result.failure() 대신 사용
+            }
 
-            // 상태 저장
+            // --- 상태 저장 ---
             dataStore.savePreviousStepsTotal(currentStepsTotal)
             dataStore.savePreviousCaloriesTotal(currentCaloriesTotal)
 
-            return Result.success()
+            return SyncResult.SUCCESS // Result.success() 대신 사용
 
         } catch (e: Exception) {
-            Log.e("WORKER", "백그라운드 데이터 동기화 중 예외 발생", e)
-            return Result.retry()
+            Log.e("SYNC_LOGIC", "Health Connect 데이터 읽기 실패", e)
+            return SyncResult.RETRY // Result.retry() 대신 사용
         }
     }
 }

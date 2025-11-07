@@ -14,17 +14,5 @@
         <item name="postSplashScreenTheme">@style/Theme.AppBase.NoActionBar</item>
     </style>
 
-    <style name="Theme.AppBase" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-    </style>
-
-    <style name="Theme.AppBase.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:fitsSystemWindows">true</item>
-    </style>
-
-    <style name="Theme.AppSplash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@android:color/white</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/dasom</item>
-        <item name="postSplashScreenTheme">@style/Theme.AppBase.NoActionBar</item>
-    </style>
 
 </resources>

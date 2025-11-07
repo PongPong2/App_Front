@@ -22,7 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,7 +46,7 @@ import com.example.myapplication.activity.LoginActivity
 import com.example.myapplication.data.HealthConnectAvailability
 import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myapplication.workers.HealthSyncWorker
+// import com.example.myapplication.workers.HealthSyncWorker // 🚨 제거
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.CoroutineScope
@@ -165,8 +164,9 @@ class MainActivity : ComponentActivity() {
     // 서비스 및 워커 로직
 
     private fun startFallDetectionService() {
-        schedulePeriodicSync()
-        scheduleDailyBloodPressureSync()
+        // 🚨 WorkManager 호출 제거: HealthSyncWorker 스케줄링 제거
+        // schedulePeriodicSync()
+        scheduleDailyBloodPressureSync() // Daily BP Worker는 유지
 
         val serviceIntent = Intent(this, FallDetectionService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -174,9 +174,11 @@ class MainActivity : ComponentActivity() {
         } else {
             startService(serviceIntent)
         }
-        Log.d("SERVICE_START", "FallDetectionService 시작됨")
+        Log.d("SERVICE_START", "FallDetectionService 시작됨 (10분 Health Sync 포함)")
     }
 
+    // 🚨 schedulePeriodicSync 함수 제거
+    /*
     private fun schedulePeriodicSync() {
         val syncRequest = PeriodicWorkRequestBuilder<HealthSyncWorker>(
             repeatInterval = 10,
@@ -189,6 +191,7 @@ class MainActivity : ComponentActivity() {
             syncRequest
         )
     }
+    */
 
     private fun scheduleDailyBloodPressureSync() {
         val DAILY_BP_WORKER_TAG = "DailyBloodPressureSync"

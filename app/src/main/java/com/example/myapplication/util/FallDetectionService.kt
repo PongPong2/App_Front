@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import com.example.myapplication.BuildConfig
 import com.example.myapplication.R
 import com.example.myapplication.data.HealthConnectManager
+import com.example.myapplication.domain.HealthSyncLogic // 💡 HealthSyncLogic 임포트
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit // 💡 TimeUnit 임포트
 import kotlin.math.sqrt
 
 class FallDetectionService : Service(), SensorEventListener {
@@ -61,7 +63,11 @@ class FallDetectionService : Service(), SensorEventListener {
     private var fallConfirmed: Boolean = false
     private var fallStartTime: Long = 0
 
-    private lateinit var handler: Handler
+    // 💡 Health Sync 관련 필드 추가
+    private lateinit var healthSyncLogic: HealthSyncLogic
+    private val SYNC_INTERVAL_MS = TimeUnit.MINUTES.toMillis(10) // 10분 주기
+
+    private lateinit var handler: Handler // 기존 Handler 필드를 재사용
 
     private val CHANNEL_ID_SERVICE = "FallDetectionServiceChannel"
     private val NOTIFICATION_ID_SERVICE = 1
@@ -69,9 +75,9 @@ class FallDetectionService : Service(), SensorEventListener {
     private val NOTIFICATION_ID_ALERT = 2
 
     // 수정된 임계치: 민감도 조정
-    private val IMPACT_THRESHOLD = 35.0f // 초기 충격 임계값 상향 (20.0f -> 35.0f)
+    private val IMPACT_THRESHOLD = 35.0f
     private val STILLNESS_THRESHOLD = 11.0f
-    private val STILLNESS_TIME_MS = 2000L // 정지 확인 시간 연장 (1500L -> 2000L, 2초)
+    private val STILLNESS_TIME_MS = 2000L
     private val FALL_CONFIRMATION_DELAY_MS = 10000L
 
     // 심박수/SpO2 위험 임계치 (테스트용)
@@ -86,6 +92,19 @@ class FallDetectionService : Service(), SensorEventListener {
         const val ACTION_CANCEL_FALL = "com.example.myapplication.CANCEL_FALL"
     }
 
+    // 💡 10분 주기 Health Sync 타이머 Runnable 추가
+    private val syncRunnable = object : Runnable {
+        override fun run() {
+            // ServiceScope (IO Dispatcher) 내에서 Health Sync 로직 실행
+            serviceScope.launch(Dispatchers.IO) {
+                Log.d(TAG, "10분 주기 Health Sync 시작 (Foreground Timer)")
+                healthSyncLogic.performSync()
+            }
+            // 10분 후에 다시 실행되도록 스케줄링
+            handler.postDelayed(this, SYNC_INTERVAL_MS)
+        }
+    }
+
     private val fallAlertRunnable = Runnable {
         if (isFalling && fallConfirmed) {
             Log.e(TAG, "10 seconds elapsed. Final Fall Alert triggered.")
@@ -97,7 +116,6 @@ class FallDetectionService : Service(), SensorEventListener {
     // SMS 전송 결과를 처리할 BroadcastReceiver 정의
     private val smsSentReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            // resultCode는 Activity.RESULT_OK (성공) 또는 SmsManager.RESULT_ERROR_XXX (실패) 중 하나입니다.
             when (resultCode) {
                 Activity.RESULT_OK -> Log.i(TAG, "SMS 최종 전송 성공: 통신사 발신 완료")
                 SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Log.e(TAG, "SMS 최종 전송 실패: 일반적인 오류 (GENERIC_FAILURE)")
@@ -116,8 +134,9 @@ class FallDetectionService : Service(), SensorEventListener {
         super.onCreate()
         Log.d(TAG, "Service Created")
 
-        // HealthConnectManager 초기화
+        // HealthConnectManager 및 HealthSyncLogic 초기화
         healthConnectManager = HealthConnectManager(applicationContext)
+        healthSyncLogic = HealthSyncLogic(applicationContext) // 💡 HealthSyncLogic 초기화
 
         handler = Handler(Looper.getMainLooper())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -142,6 +161,10 @@ class FallDetectionService : Service(), SensorEventListener {
 
         // 1분 주기 심박수 모니터링 시작
         startHeartRateMonitoring()
+
+        // 💡 10분 주기 Health Sync 타이머 시작
+        handler.post(syncRunnable)
+        Log.d(TAG, "10분 주기 Health Sync 타이머 시작됨.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -160,6 +183,10 @@ class FallDetectionService : Service(), SensorEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        // 💡 10분 주기 Health Sync 타이머 중단
+        handler.removeCallbacks(syncRunnable)
+
         handler.removeCallbacks(fallAlertRunnable)
         sensorManager.unregisterListener(this)
 
@@ -177,7 +204,7 @@ class FallDetectionService : Service(), SensorEventListener {
     }
 
     //  Heart Rate / SpO2 Monitoring Logic
-
+    // ... (startHeartRateMonitoring 함수는 수정 없이 유지) ...
     /** 1분마다 심박수와 SpO2를 체크하여 위험 임계치를 벗어나는지 확인합니다. */
     private fun startHeartRateMonitoring() {
         serviceScope.launch {
@@ -207,7 +234,6 @@ class FallDetectionService : Service(), SensorEventListener {
             }
         }
     }
-
 
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -284,6 +310,7 @@ class FallDetectionService : Service(), SensorEventListener {
     }
 
     //  Alerting and Location
+    // ... (나머지 로직은 수정 없이 유지) ...
 
     /** 최종적으로 위치를 획득하고 SMS/Kakao 알림을 전송하는 함수 */
     private fun getLocationAndSendAlert(isImmediate: Boolean = false, customMessage: String? = null) {
