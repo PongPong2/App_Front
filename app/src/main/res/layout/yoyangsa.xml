@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="#f9f9f9"
     android:fitsSystemWindows="true"
     tools:context=".activity.MainActivity">
 
@@ -13,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="16dp"  app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -22,9 +21,10 @@
         android:id="@+id/logo_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="#f9f9f9"
         android:minHeight="?attr/actionBarSize"
-        android:padding="16dp"
+        android:paddingStart="16dp" android:paddingTop="16dp"
+        android:paddingEnd="16dp" android:paddingBottom="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:fontFamily="@font/pretendardvariable"
+            android:fontFamily="@font/dasomfont"
             android:text="요양사 정보"
             android:textColor="@android:color/black"
             android:textSize="20sp"
@@ -54,9 +54,7 @@
         android:id="@+id/logo_divider"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:background="#FFCD7C"
+        android:layout_marginStart="24dp"  android:layout_marginEnd="24dp"    android:background="#FFCD7C"
         app:layout_constraintTop_toBottomOf="@id/logo_bar" />
 
     <ScrollView
@@ -76,10 +74,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="70dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="20dp"
+                android:layout_marginStart="24dp"  android:layout_marginTop="70dp"
+                android:layout_marginEnd="24dp"    android:layout_marginBottom="20dp"
                 android:background="@drawable/bohoja_border_background"
                 android:orientation="vertical">
 
@@ -91,14 +87,24 @@
                     android:paddingTop="24dp"
                     android:paddingBottom="24dp">
 
-                    <ImageView
-                        android:id="@+id/iv_profile_picture1"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="85dp"
+                        android:layout_height="85dp"
                         android:layout_gravity="center_horizontal"
+                        app:cardCornerRadius="40dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/common_google_signin_btn_text_dark_pressed">
+
+                        <ImageView
+                        android:id="@+id/iv_profile_picture1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:contentDescription="프로필 사진"
                         android:scaleType="centerCrop"
                         android:src="@drawable/yoyangsa" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 
@@ -138,7 +144,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/pretendardvariable"
+                                    android:fontFamily="@font/dasomfont"
                                     android:text="이름"
                                     android:textColor="@android:color/black"
                                     android:textSize="16sp"
@@ -150,7 +156,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@drawable/yoyangsa_style"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:gravity="center"
                                 android:padding="12dp"
                                 android:text="김미혜"
@@ -177,12 +183,12 @@
                                     android:layout_width="20dp"
                                     android:layout_height="20dp"
                                     android:layout_marginEnd="4dp"
-                                    android:src="@drawable/phone" />
+                                    android:src="@drawable/gender" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/pretendardvariable"
+                                    android:fontFamily="@font/dasomfont"
                                     android:text="성별"
                                     android:textColor="@android:color/black"
                                     android:textSize="16sp"
@@ -194,7 +200,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@drawable/yoyangsa_style"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:gravity="center"
                                 android:padding="12dp"
                                 android:text="여성"
@@ -228,12 +234,12 @@
                                     android:layout_width="20dp"
                                     android:layout_height="20dp"
                                     android:layout_marginEnd="4dp"
-                                    android:src="@drawable/gender" />
+                                    android:src="@drawable/phone" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/pretendardvariable"
+                                    android:fontFamily="@font/dasomfont"
                                     android:text="전화번호"
                                     android:textColor="@android:color/black"
                                     android:textSize="16sp"
@@ -245,7 +251,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@drawable/yoyangsa_style"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:gravity="center"
                                 android:padding="12dp"
                                 android:text="010-XXXX-XXXX"
@@ -282,13 +288,13 @@
                                     android:src="@drawable/centre" />
 
                                 <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
-                                android:text="소속 센터명"
-                                android:textColor="@android:color/black"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/dasomfont"
+                                    android:text="소속 센터명"
+                                    android:textColor="@android:color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
 
                             </LinearLayout>
 
@@ -297,7 +303,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:background="@drawable/yoyangsa_style"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:gravity="center"
                                 android:padding="12dp"
                                 android:text="DCU요양병원"
@@ -308,23 +314,21 @@
 
                     </LinearLayout>
 
-                </LinearLayout> </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_back"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="58dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:fontFamily="@font/pretendardvariable"
+                android:stateListAnimator="@null"
+                android:layout_marginStart="24dp"  android:layout_marginEnd="24dp"    android:fontFamily="@font/dasomfont"
                 android:text="뒤로가기"
                 android:textColor="@android:color/background_dark"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:backgroundTint="#FFCD7C"
-                app:cornerRadius="20dp"
-                app:strokeColor="@android:color/darker_gray" />
+                app:backgroundTint="#FFD899"
+                app:cornerRadius="20dp" />
 
         </LinearLayout>
     </ScrollView>

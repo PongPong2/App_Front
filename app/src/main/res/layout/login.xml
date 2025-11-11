@@ -10,9 +10,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
         android:padding="24dp"
-        android:gravity="center_horizontal"
         tools:context=".activity.LoginActivity">
 
         <Space
@@ -23,10 +23,21 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="80dp"
-            android:adjustViewBounds="true"
             android:layout_marginBottom="40dp"
-            android:src="@drawable/title_logo"
-            android:contentDescription="앱 로고" />
+            android:adjustViewBounds="true"
+            android:contentDescription="앱 로고"
+            android:src="@drawable/title_logo" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/dasomfont"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="AI·IoT와 생체 데이터를 통한 건강 모니터링 플랫폼"
+            android:textColor="#333333"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -37,16 +48,17 @@
             app:boxCornerRadiusBottomEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusTopStart="8dp">
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxStrokeColor="@android:color/transparent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_id"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
-                android:textStyle="bold"
-                android:inputType="text"
-                android:singleLine="true" />
+            android:id="@+id/input_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/dasomfont"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textStyle="bold" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -59,22 +71,23 @@
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusTopStart="8dp"
-            app:passwordToggleEnabled="true">
+            app:passwordToggleEnabled="true"
+            app:boxStrokeColor="@android:color/transparent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
-                android:textStyle="bold"
-                android:inputType="textPassword"
-                android:singleLine="true" />
+            android:id="@+id/input_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/dasomfont"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:textStyle="bold" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="15dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp">
 
@@ -83,38 +96,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_marginStart="16dp"
-                android:fontFamily="@font/pretendardvariable"
-                android:textStyle="bold"
-                android:text="자동로그인" />
+                android:layout_marginStart="10dp"
+                android:fontFamily="@font/dasomfont"
+                android:text="자동로그인"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/text_find_password"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
-                android:textStyle="bold"
-                android:text="아이디/비밀번호 찾기"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
+                android:fontFamily="@font/dasomfont"
+                android:text="아이디/비밀번호 찾기"
                 android:textColor="#0A1AFC"
-                />
+                android:textStyle="bold" />
         </RelativeLayout>
-
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_kakao_login_material"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="60dp"
+            android:fontFamily="@font/dasomfont"
             android:text="카카오로그인"
-            android:fontFamily="@font/pretendardvariable"
             android:textColor="#3C1E1E"
             android:textSize="18sp"
+            android:textStyle="bold"
+            android:stateListAnimator="@null"
             app:backgroundTint="#FFEB00"
             app:cornerRadius="20dp"
-            app:strokeColor="@android:color/darker_gray"
-            app:strokeWidth="1dp"
-            android:textStyle="bold"
             app:icon="@drawable/kakaotalk_logo_style"
             app:iconGravity="textStart"
             app:iconPadding="5dp"
@@ -123,33 +133,29 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_login"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="60dp"
+            android:fontFamily="@font/dasomfont"
             android:text="로그인"
             android:textColor="@android:color/black"
-            android:fontFamily="@font/pretendardvariable"
+            android:stateListAnimator="@null"
             android:textSize="18sp"
-            app:cornerRadius="20dp"
-            app:strokeColor="@android:color/darker_gray"
-            app:backgroundTint="#FFD899"
             android:textStyle="bold"
-            app:strokeWidth="1dp"
-             />
+            app:backgroundTint="#FFD899"
+            app:cornerRadius="20dp" />
 
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_signup"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="60dp"
+            android:fontFamily="@font/dasomfont"
             android:text="회원가입"
             android:textColor="@android:color/black"
-            android:fontFamily="@font/pretendardvariable"
-            android:textStyle="bold"
+            android:stateListAnimator="@null"
             android:textSize="18sp"
-            app:cornerRadius="20dp"
-            app:strokeColor="@android:color/darker_gray"
+            android:textStyle="bold"
             app:backgroundTint="#FFD899"
-            app:strokeWidth="1dp"
-            />
+            app:cornerRadius="20dp" />
 
         <Space
             android:layout_width="match_parent"

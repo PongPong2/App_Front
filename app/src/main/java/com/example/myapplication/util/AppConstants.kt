@@ -2,7 +2,6 @@ package com.example.myapplication.util
 
 const val PREFS_NAME = "LOGIN_PREFS"
 const val KEY_NAME = "user_name"
-const val KEY_GENDER = "user_gender"
 
 const val KEY_BIRTHDAY = "user_birthday"
 const val KEY_AUTO_LOGIN = "auto_login"
@@ -11,4 +10,4 @@ const val KEY_PROFILE_IMAGE_URL = "user_profile_image_url"
 
 
 // IP 주소
-const val BASE_URL = "http://192.168.1.102:8080"
+const val BASE_URL = "http://192.168.1.105:8080"

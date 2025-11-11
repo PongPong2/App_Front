@@ -335,7 +335,7 @@ fun LoginObserver(viewModel: LoginViewModel, sharedPrefsManager: SharedPrefsMana
                         val birthYear = birthYearString.toInt()
                         // 3. 나이 계산
                         val age = currentYear - birthYear
-                        ageString = "만 $age" // 결과: "26"
+                        ageString = "만 $age" + "세" // 결과: "26"
 
                     } catch (e: NumberFormatException) {
                         Log.e("AgeCalcError", "Birth year format error: $birthYearString")

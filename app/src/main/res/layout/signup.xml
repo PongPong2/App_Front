@@ -54,7 +54,7 @@
                 android:id="@+id/input_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:textStyle="bold"
                 android:inputType="textPersonName"
                 android:singleLine="true" />
@@ -71,7 +71,7 @@
                 android:id="@+id/input_id"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:textStyle="bold"
                 android:inputType="text"
                 android:singleLine="true" />
@@ -89,7 +89,7 @@
                 android:id="@+id/input_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:textStyle="bold"
                 android:inputType="textPassword"
                 android:singleLine="true" />
@@ -107,7 +107,7 @@
                 android:id="@+id/input_password_confirm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:textStyle="bold"
                 android:inputType="textPassword"
                 android:singleLine="true" />
@@ -124,7 +124,7 @@
                 android:id="@+id/birthdayInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:hint="생년월일을 입력해주세요. (YYYY-MM-DD)"
                 android:inputType="number"
                 android:maxLength="10"
@@ -144,7 +144,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:textStyle="bold"
                 android:text="남성"
                 />
@@ -154,7 +154,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:textStyle="bold"
                 android:text="여성" />
         </RadioGroup>
@@ -162,32 +162,31 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_signup"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="58dp"
             android:text="회원가입"
-            android:fontFamily="@font/pretendardvariable"
+            android:fontFamily="@font/dasomfont"
             android:textStyle="bold"
             android:textColor="@android:color/black"
+            android:stateListAnimator="@null"
             android:textSize="18sp"
             app:backgroundTint="#FFD899"
             app:cornerRadius="20dp"
-            app:strokeColor="@android:color/darker_gray"
-            app:strokeWidth="1dp" />
+             />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="58dp"
             android:text="뒤로가기"
             app:backgroundTint="#FFD899"
-            android:fontFamily="@font/pretendardvariable"
+            android:fontFamily="@font/dasomfont"
+            android:stateListAnimator="@null"
             android:textStyle="bold"
             android:textColor="@android:color/background_dark"
             android:textSize="18sp"
             app:cornerRadius="20dp"
-            app:strokeColor="@android:color/darker_gray"/>
+            />
 
     </LinearLayout>
 </ScrollView>

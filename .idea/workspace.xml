@@ -94,14 +94,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a1fd5d8-f805-49b0-a36f-2b9d2b2d22a2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/birthday.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/main_input_style.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/mainpage_style.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/font/dasomfont.ttf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/activity/LoginActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/activity/LoginActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/activity/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/activity/MainActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/activity/MainPageActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/activity/MainPageActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/data_model/LoginResponse.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/data_model/LoginResponse.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/util/AppConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/util/AppConstants.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/util/SharedPrefsManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/myapplication/util/SharedPrefsManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/btn_style.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/btn_style.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/loginout_style.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/loginout_style.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/yoyangsa_bottom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/yoyangsa_bottom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/font/my_font.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/bohoja.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/bohoja.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/login.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/login.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/main.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/main.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/signup.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/signup.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/yoyangsa.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/yoyangsa.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -172,9 +181,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="resourceFile" />
         <option value="Class" />
         <option value="Kotlin Class" />
+        <option value="resourceFile" />
       </list>
     </option>
   </component>
@@ -207,6 +216,7 @@
     &quot;accountId&quot;: &quot;579e65ac-0568-42d9-8eec-bca3239e2369&quot;
   }
 }</component>
+  <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="C:\Users\user\.gradle\wrapper\dists\gradle-8.13-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13" javaHome="C:\Program Files\Android\Android Studio1\jbr" gradleVersion="8.13" />
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -221,9 +231,11 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Android App.app.executor": "Run",
+    "Gradle.Build App_Front.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
@@ -231,15 +243,21 @@
     "cidr.known.project.marker": "true",
     "com.google.services.firebase.aqiPopupShown": "true",
     "git-widget-placeholder": "feature/auth",
+    "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/user/Desktop/App_Front",
-    "project.structure.last.edited": "Modules",
+    "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.17",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "templates.modelproviders.configurable"
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
 }]]></component>
+  <component name="PsdUISettings">
+    <option name="MODULE_TAB" value="Properties" />
+    <option name="LAST_EDITED_SIGNING_CONFIG" value="debug" />
+  </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\user\Desktop\App_Front\app\src\main\res\font" />
       <recent name="C:\Users\user\Desktop\App_Front\app\src\main\res\drawable" />
     </key>
     <key name="K2MoveDeclarationsDialog.RECENT_PACKAGE_KEY">
@@ -334,17 +352,29 @@
     </task>
     <servers />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="kotlin-field">
+          <url>file://$PROJECT_DIR$/app/src/main/java/com/example/myapplication/util/AppConstants.kt</url>
+          <line>3</line>
+          <properties myFieldName="KEY_NAME" myClassName="com.example.myapplication.util.AppConstantsKt" />
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
       <map>
         <entry key="com.example.myapplication">
           <value>
-            <CheckInfo lastCheckTimestamp="1762412000754" />
+            <CheckInfo lastCheckTimestamp="1762822815482" />
           </value>
         </entry>
         <entry key="com.example.myapplication.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1762412000762" />
+            <CheckInfo lastCheckTimestamp="1762822815480" />
           </value>
         </entry>
       </map>
