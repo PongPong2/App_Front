@@ -49,15 +49,26 @@ class DailyBloodPressureWorker(
             val latestDiastolic: Int?
 
             if (bpRecords.isNotEmpty()) {
-                val lastRecord = bpRecords.last()
-                latestSystolic = lastRecord.systolic.inMillimetersOfMercury.toInt()
-                latestDiastolic = lastRecord.diastolic.inMillimetersOfMercury.toInt()
+                val lastRecord = bpRecords.maxByOrNull { it.time }
+                latestSystolic = lastRecord?.systolic?.inMillimetersOfMercury?.toInt()
+                latestDiastolic = lastRecord?.diastolic?.inMillimetersOfMercury?.toInt()
+                if (lastRecord == null) {
+                    Log.w("DAILY_WORKER", "혈압 기록은 있지만 최신 레코드를 찾을 수 없습니다.")
+                }
             } else {
                 latestSystolic = null
                 latestDiastolic = null
                 Log.d("DAILY_WORKER", "오늘 측정된 혈압 기록 없음.")
             }
 
+            val latestWeightRecord = healthConnectManager.readLatestWeight()
+
+            val latestWeightKg: Double? = if (latestWeightRecord != null) {
+                latestWeightRecord.weight.inKilograms // Kilograms 단위로 변환
+            } else {
+                Log.d("DAILY_WORKER", "최근 체중 기록 없음.")
+                null
+            }
             // 수면 점수 계산 및 처리
             // HealthConnectManager 내의 별도 함수를 호출하여 어젯밤 수면 점수를 계산 (Int 타입)
             val sleepScore: Int? = healthConnectManager.calculateSleepScoreForPreviousNight()
@@ -71,6 +82,7 @@ class DailyBloodPressureWorker(
                 systolicBloodPressure = latestSystolic,
                 diastolicBloodPressure = latestDiastolic,
                 sleepScore = sleepScore,
+                weight = latestWeightKg,
                 logDate = logDateString
             )
 

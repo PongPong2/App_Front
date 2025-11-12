@@ -259,6 +259,27 @@ class HealthConnectManager(private val context: Context) {
         return minOf(score.toInt(), 100)
     }
 
+    suspend fun readLatestWeight(): WeightRecord? {
+        val endTime = Instant.now()
+        val startTime = endTime.minus(30, ChronoUnit.DAYS)
+
+        return try {
+            val request = ReadRecordsRequest(
+                recordType = WeightRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                // 최신 기록을 먼저 가져오기 위해 내림차순 정렬
+                ascendingOrder = false,
+            )
+
+            val response = healthConnectClient.readRecords(request)
+            response.records.firstOrNull()
+
+        } catch (e: Exception) {
+            Log.e("HC_MANAGER", "최신 체중 기록 읽기 실패", e)
+            null // 오류 발생 시 null 반환
+        }
+    }
+
     // --- 유틸리티 함수 ---
     private fun isSupported() = Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
 }
