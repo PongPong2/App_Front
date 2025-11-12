@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="#f9f9f9"
     android:fitsSystemWindows="true"
     tools:context=".activity.MainActivity">
 
@@ -19,7 +19,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:background="#f9f9f9"
             android:minHeight="?attr/actionBarSize"
             android:padding="16dp">
 
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:fontFamily="@font/pretendardvariable"
+                android:fontFamily="@font/dasomfont"
                 android:text="보호자 정보"
                 android:textColor="@android:color/black"
                 android:textSize="20sp"
@@ -81,15 +81,25 @@
                         android:orientation="horizontal"
                         android:padding="13dp">
 
-                        <ImageView
-                            android:id="@+id/bohojaProfile1"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
-                            android:contentDescription="프로필 사진"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/girl" />
+                            android:layout_gravity="center_vertical"
+                            app:cardCornerRadius="25dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#FFF0DD">
 
+                            <ImageView
+                                android:id="@+id/bohojaProfile1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="프로필 사진"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/girl" />
+
+                        </com.google.android.material.card.MaterialCardView>
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -102,7 +112,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginBottom="4dp"
                                 android:ellipsize="end"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:singleLine="true"
                                 android:text="김영지"
                                 android:textColor="@android:color/black"
@@ -135,7 +145,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="주소"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -147,7 +157,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
                                 android:layout_weight="1"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="서울특별시 대구가톨릭병원"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -169,7 +179,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="관계"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -181,7 +191,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:layout_marginStart="8dp"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="딸"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -197,7 +207,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="연락처"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -208,8 +218,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:fontFamily="@font/pretendardvariable"
-                                android:text="010-XXXX-XXXXX"
+                                android:fontFamily="@font/dasomfont"
+                                android:text="010-9971-0455"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -233,15 +243,25 @@
                         android:orientation="horizontal"
                         android:padding="13dp">
 
-                        <ImageView
-                            android:id="@+id/bohojaProfile2"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
-                            android:contentDescription="프로필 사진"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/men" />
+                            android:layout_gravity="center_vertical"
+                            app:cardCornerRadius="25dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#FFF0DD">
 
+                            <ImageView
+                                android:id="@+id/bohojaProfile2"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="프로필 사진"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/men" />
+
+                        </com.google.android.material.card.MaterialCardView>
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -254,7 +274,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginBottom="4dp"
                                 android:ellipsize="end"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:singleLine="true"
                                 android:text="홍범도"
                                 android:textColor="@android:color/black"
@@ -288,7 +308,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="주소"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -300,7 +320,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
                                 android:layout_weight="1"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="대구광역시 대구가톨릭병원"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -322,7 +342,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="관계"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -333,7 +353,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="아들"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -350,7 +370,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="연락처"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -361,8 +381,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:fontFamily="@font/pretendardvariable"
-                                android:text="010-XXXX-XXXX"
+                                android:fontFamily="@font/dasomfont"
+                                android:text="010-6585-8555"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -387,15 +407,25 @@
                         android:orientation="horizontal"
                         android:padding="13dp">
 
-                        <ImageView
-                            android:id="@+id/bohojaProfile3"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="16dp"
-                            android:contentDescription="프로필 사진"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/girl2" />
+                            android:layout_gravity="center_vertical"
+                            app:cardCornerRadius="25dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="@color/common_google_signin_btn_text_dark_pressed">
 
+                            <ImageView
+                                android:id="@+id/bohojaProfile3"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="프로필 사진"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/girl2" />
+
+                        </com.google.android.material.card.MaterialCardView>
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -408,13 +438,12 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginBottom="4dp"
                                 android:ellipsize="end"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:singleLine="true"
                                 android:text="강해린"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
-
                         </LinearLayout>
                     </LinearLayout>
 
@@ -441,12 +470,12 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:textStyle="bold"
                                 android:text="주소"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
-                                 />
+                                />
 
                             <TextView
                                 android:id="@+id/M_G_Addr3"
@@ -454,7 +483,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
                                 android:layout_weight="1"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="부산특별시 대구가톨릭병원"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -476,7 +505,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="관계"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -487,7 +516,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:layout_marginStart="8dp"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="손녀"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -504,7 +533,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/pretendardvariable"
+                                android:fontFamily="@font/dasomfont"
                                 android:text="연락처"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -515,8 +544,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:fontFamily="@font/pretendardvariable"
-                                android:text="010-XXXX-XXXX"
+                                android:fontFamily="@font/dasomfont"
+                                android:text="010-9551-8525"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -526,17 +555,18 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_back"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="58dp"
-                    android:fontFamily="@font/pretendardvariable"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:stateListAnimator="@null"
+                    android:fontFamily="@font/dasomfont"
                     android:text="뒤로가기"
                     android:textColor="@android:color/background_dark"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:backgroundTint="#FFD899"
-                    app:cornerRadius="20dp"
-                    app:strokeColor="@android:color/darker_gray" />
+                    app:cornerRadius="20dp" />
 
             </LinearLayout>
         </ScrollView>

@@ -8,4 +8,7 @@ const val KEY_BIRTHDAY = "user_birthday"
 const val KEY_AUTO_LOGIN = "auto_login"
 const val KEY_PROFILE_IMAGE_URL = "user_profile_image_url"
 
-const val BASE_URL = "http://10.32.16.212:8080"
+
+
+// IP 주소
+const val BASE_URL = "http://10.32.25.26:8080"
