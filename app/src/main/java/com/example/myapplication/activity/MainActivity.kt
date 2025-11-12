@@ -40,20 +40,16 @@ import com.example.myapplication.data_state.LoginState
 import com.example.myapplication.viewmodel.LoginViewModel
 import com.example.myapplication.R
 import com.example.myapplication.util.SharedPrefsManager
-import com.example.myapplication.activity.SignUpActivity
-import com.example.myapplication.activity.MainPageActivity
-import com.example.myapplication.activity.LoginActivity
 import com.example.myapplication.data.HealthConnectAvailability
 import com.example.myapplication.data.HealthConnectManager
 import com.example.myapplication.ui.theme.MyApplicationTheme
-// import com.example.myapplication.workers.HealthSyncWorker // 🚨 제거
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import com.example.myapplication.workers.DailyBloodPressureWorker
+import com.example.myapplication.workers.DailyHealthLogWorker
 import java.time.Duration
 import java.time.LocalTime
 import com.example.myapplication.util.PREFS_NAME
@@ -165,9 +161,8 @@ class MainActivity : ComponentActivity() {
     // 서비스 및 워커 로직
 
     private fun startFallDetectionService() {
-        // 🚨 WorkManager 호출 제거: HealthSyncWorker 스케줄링 제거
         // schedulePeriodicSync()
-        scheduleDailyBloodPressureSync() // Daily BP Worker는 유지
+        scheduleDailyHealthLogSync() // Daily BP Worker는 유지
 
         val serviceIntent = Intent(this, FallDetectionService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -178,7 +173,6 @@ class MainActivity : ComponentActivity() {
         Log.d("SERVICE_START", "FallDetectionService 시작됨 (10분 Health Sync 포함)")
     }
 
-    // 🚨 schedulePeriodicSync 함수 제거
     /*
     private fun schedulePeriodicSync() {
         val syncRequest = PeriodicWorkRequestBuilder<HealthSyncWorker>(
@@ -194,7 +188,7 @@ class MainActivity : ComponentActivity() {
     }
     */
 
-    private fun scheduleDailyBloodPressureSync() {
+    private fun scheduleDailyHealthLogSync() {
         val DAILY_BP_WORKER_TAG = "DailyBloodPressureSync"
         val targetHour = 23
         val targetMinute = 50
@@ -207,7 +201,7 @@ class MainActivity : ComponentActivity() {
             delay = delay.plusDays(1)
         }
 
-        val syncRequest = PeriodicWorkRequestBuilder<DailyBloodPressureWorker>(
+        val syncRequest = PeriodicWorkRequestBuilder<DailyHealthLogWorker>(
             repeatInterval = 1,
             repeatIntervalTimeUnit = TimeUnit.DAYS
         )

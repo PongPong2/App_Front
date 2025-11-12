@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.myapplication.data.HealthConnectManager
-import androidx.health.connect.client.records.BloodPressureRecord
-import androidx.health.connect.client.units.Pressure
 import com.example.myapplication.api.RetrofitClient
 import com.example.myapplication.util.SharedPrefsManager
 import com.example.myapplication.domain.DailyHealthLogRequest
@@ -14,10 +12,9 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 
 
-class DailyBloodPressureWorker(
+class DailyHealthLogWorker(
     appContext: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
