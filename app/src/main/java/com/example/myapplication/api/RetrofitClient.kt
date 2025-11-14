@@ -1,11 +1,12 @@
 package com.example.myapplication.api
 
 import android.content.Context
-import com.dasom.app.network.GuardianApiService
+import com.dasom.app.network.GuardianApiService // 기존 코드에서 사용된 GuardianApiService
 import com.example.myapplication.util.SharedPrefsManager
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
+import com.google.gson.JsonPrimitive // Gson Primitive 임포트 추가
 import com.google.gson.JsonSerializer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -17,11 +18,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import com.example.myapplication.util.BASE_URL
+import com.example.myapplication.network.MedicationApiService
+import com.example.myapplication.api.ApiService
+import com.example.myapplication.api.UserService
+import com.example.myapplication.api.HealthService
 
-/**
- * Retrofit 인스턴스를 관리하는 싱글톤 객체입니다.
- * 🚨 사용하기 전에 반드시 Application 클래스 등에서 RetrofitClient.initialize(context)를 호출해야 합니다.
- */
 object RetrofitClient {
 
     // 🚨 인증 인터셉터에서 SharedPrefsManager를 사용하기 위해 Application Context가 필요합니다.
@@ -39,7 +40,7 @@ object RetrofitClient {
             .registerTypeAdapter(
                 LocalDate::class.java,
                 JsonSerializer<LocalDate> { src, _, _ ->
-                    src?.format(DateTimeFormatter.ISO_LOCAL_DATE)?.let { com.google.gson.JsonPrimitive(it) }
+                    src?.format(DateTimeFormatter.ISO_LOCAL_DATE)?.let { JsonPrimitive(it) } // JsonPrimitive 임포트 사용
                 }
             )
             .registerTypeAdapter(
@@ -52,7 +53,7 @@ object RetrofitClient {
             .registerTypeAdapter(
                 LocalDateTime::class.java,
                 JsonSerializer<LocalDateTime> { src, _, _ ->
-                    src?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)?.let { com.google.gson.JsonPrimitive(it) }
+                    src?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)?.let { JsonPrimitive(it) } // JsonPrimitive 임포트 사용
                 }
             )
             .registerTypeAdapter(
@@ -72,6 +73,7 @@ object RetrofitClient {
             val originalRequest = chain.request()
 
             // 🚨 Context가 초기화되어야만 SharedPrefsManager 사용 가능
+            // getAccessToken()에서 NPE 방지를 위해 applicationContext 사용
             val token = SharedPrefsManager(applicationContext).getAccessToken()
 
             val requestBuilder = originalRequest.newBuilder()
@@ -113,7 +115,6 @@ object RetrofitClient {
     // 4. 🚨 Activity에서 호출할 서비스들 정의
     // (Activity에서는 RetrofitClient.apiService.메서드() 형태로 호출)
 
-    // 🚨 YoyangsaActivity에서 요양사 정보를 조회할 때 사용할 서비스
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
@@ -124,6 +125,11 @@ object RetrofitClient {
 
     val healthService: HealthService by lazy {
         retrofit.create(HealthService::class.java)
+    }
+
+    // ⭐️ 추가된 약물 정보 서비스
+    val medicationService: MedicationApiService by lazy {
+        retrofit.create(MedicationApiService::class.java)
     }
 
     // 🚨 BohojaActivity에서 보호자 정보를 조회할 때 사용할 서비스

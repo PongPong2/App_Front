@@ -4,19 +4,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.api.RetrofitClient
 import com.example.myapplication.R
 import com.example.myapplication.util.SharedPrefsManager
 import com.example.myapplication.activity.YoyangsaActivity
 import com.example.myapplication.activity.BohojaActivity
-import com.example.myapplication.domain.DailyHealthLogRequest // DTO 경로 확인
+import com.example.myapplication.domain.DailyHealthLogRequest
 import com.example.myapplication.databinding.MainBinding
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.collectLatest // ⭐ 추가: collectLatest 임포트
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.example.myapplication.util.KEY_PROFILE_IMAGE_URL
@@ -25,8 +28,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import com.example.myapplication.util.BASE_URL
-class MainPageActivity : AppCompatActivity() {
+import com.example.myapplication.Alarm.AlarmEventBus // ⭐ 추가: AlarmEventBus 임포트
 
+class MainPageActivity : AppCompatActivity() {
 
     private lateinit var prefsManager: SharedPrefsManager
     private lateinit var binding: MainBinding
@@ -69,19 +73,45 @@ class MainPageActivity : AppCompatActivity() {
 
         // 최종 확정된 로그아웃 버튼 ID 사용
         binding.loginOut.setOnClickListener {
-            // MainActivity의 정적 startLogout 메서드를 사용한다고 가정
             MainActivity.startLogout(this)
         }
 
         // 수동 입력 버튼 리스너
         binding.MInputSubmit.setOnClickListener {
-            // M_Input_Sugar (혈당), M_Input_BodyTemp (체온)
             handleManualInput(binding.MInputSugar, binding.MInputBodyTemp)
         }
+        collectAlarmEvents()
+    }
+
+    private fun collectAlarmEvents() {
+        // Activity의 생명주기에 맞춰 코루틴을 실행합니다.
+        lifecycleScope.launch {
+            AlarmEventBus.events.collectLatest { timeString ->
+                // 이벤트가 수신되면 인앱 다이얼로그를 띄웁니다.
+                showInAppAlarmDialog(timeString)
+            }
+        }
+    }
+    private fun showInAppAlarmDialog(timeString: String) {
+        // Activity가 종료 중이거나 파괴되었다면 다이얼로그를 띄우지 않습니다.
+        if (isFinishing || isDestroyed) return
+
+        AlertDialog.Builder(this)
+            .setTitle("🔔복약 $timeString 알림🔔")
+            .setMessage("$timeString 입니다! 약을 복용하셨나요 ?.")
+            .setPositiveButton("복용 완료") { dialog, _ ->
+                // TODO: 복용 완료 시 서버에 기록하거나 로컬 상태 업데이트
+                Toast.makeText(this, "복용 확인 완료!", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .setNegativeButton("나중에") { dialog, _ ->
+                // TODO: 스누즈(Snooze) 또는 다음 알림까지 연기하는 로직
+                dialog.dismiss()
+            }
+            .show()
     }
 
     // 수동 입력 및 서버 통신 로직
-
     private fun handleManualInput(inputBloodSugar: TextInputEditText, inputBodyTemp: TextInputEditText) {
         // 파라미터 이름을 역할에 맞게 변경 (M_Input_Sugar는 이제 혈당을 의미함)
 

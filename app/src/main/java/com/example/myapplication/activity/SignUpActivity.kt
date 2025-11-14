@@ -203,11 +203,6 @@ class SignUpActivity : AppCompatActivity() {
             Toast.makeText(this, "생년월일 형식이 올바르지 않습니다. (YYYY-MM-DD)", Toast.LENGTH_SHORT).show()
             return
         }
-
-        // 💡 [핵심 수정 완료된 부분]
-        // 💡 selectedImageUris(List<Uri>)에서 첫 번째 이미지를(Uri?) 안전하게 추출합니다.
-        // 💡 .firstOrNull()을 사용하여 리스트가 비어있으면(EmptyList) null을 반환합니다.
-        // 💡 이 코드가 'ArrayList/EmptyList cannot be cast to Uri' 오류를 해결합니다.
         val profileUri: Uri? = selectedImageUris.firstOrNull()
 
         val request = UserRegistrationRequest(
@@ -224,7 +219,6 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun observeRegistrationState() {
-        // ... (기존 코드와 동일) ...
         lifecycleScope.launch {
             viewModel.registrationState.collect { state ->
                 when (state) {
